@@ -32,11 +32,18 @@ LIB_DEP:=
 LINKER_SCRIPT_DEP:=
 
 # Every subdirectory with source files must be described here
-SUBDIRS := 
+SUBDIRS :=  \
+../Config \
+../lufa_files
 
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../Descriptors.c \
+../lufa_files/Device_AVR8.c \
+../lufa_files/Endpoint_AVR8.c \
+../lufa_files/USBController_AVR8.c \
+../lufa_files/USBTask.c \
 ../main.c
 
 
@@ -47,15 +54,35 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+Descriptors.o \
+lufa_files/Device_AVR8.o \
+lufa_files/Endpoint_AVR8.o \
+lufa_files/USBController_AVR8.o \
+lufa_files/USBTask.o \
 main.o
 
 OBJS_AS_ARGS +=  \
+Descriptors.o \
+lufa_files/Device_AVR8.o \
+lufa_files/Endpoint_AVR8.o \
+lufa_files/USBController_AVR8.o \
+lufa_files/USBTask.o \
 main.o
 
 C_DEPS +=  \
+Descriptors.d \
+lufa_files/Device_AVR8.d \
+lufa_files/Endpoint_AVR8.d \
+lufa_files/USBController_AVR8.d \
+lufa_files/USBTask.d \
 main.d
 
 C_DEPS_AS_ARGS +=  \
+Descriptors.d \
+lufa_files/Device_AVR8.d \
+lufa_files/Endpoint_AVR8.d \
+lufa_files/USBController_AVR8.d \
+lufa_files/USBTask.d \
 main.d
 
 OUTPUT_FILE_PATH +=codebase.elf
@@ -72,10 +99,45 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
+./Descriptors.o: .././Descriptors.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+lufa_files/Device_AVR8.o: ../lufa_files/Device_AVR8.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+lufa_files/Endpoint_AVR8.o: ../lufa_files/Endpoint_AVR8.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+lufa_files/USBController_AVR8.o: ../lufa_files/USBController_AVR8.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+lufa_files/USBTask.o: ../lufa_files/USBTask.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
 ./main.o: .././main.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
@@ -105,7 +167,7 @@ all: $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
 $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP) $(LINKER_SCRIPT_DEP)
 	@echo Building target: $@
 	@echo Invoking: AVR/GNU Linker : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="codebase.map" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2"  
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="codebase.map" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,-L"../../lufa" -Wl,-L"../../lufa/LUFA/Drivers/USB/Core" -Wl,-L"../../lufa/LUFA/Drivers/USB/Class/Device" -Wl,-L"../../lufa/LUFA/Platform"  -Wl,--gc-sections -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2"  
 	@echo Finished building target: $@
 	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures  "codebase.elf" "codebase.hex"
 	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "codebase.elf" "codebase.eep" || exit 0

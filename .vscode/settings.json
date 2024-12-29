@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "descriptors.h": "c",
+        "string.h": "c"
+    }
+}

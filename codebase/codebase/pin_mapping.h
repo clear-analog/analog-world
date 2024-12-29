@@ -14,8 +14,8 @@
 #define pin_PWR_DWN PIN1
 #define pin_RST PIN2
 #define reg_ADC_register 0x02
-#define ADC_CMD_SDATAC 0b00010001
-#define ADC_CMD_RDATAC 0b00010000
-#define ADC_PIN_DRDY 
+#define cmd_ADC_SDATAC 0b00010001
+#define cmd_ADC_RDATAC 0b00010000
+#define pin_ADC_DRDY 0x03
 
 #endif
