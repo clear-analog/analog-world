@@ -40,9 +40,13 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../Descriptors.c \
+../lufa_files/DeviceStandardReq.c \
 ../lufa_files/Device_AVR8.c \
+../lufa_files/EndpointStream_AVR8.c \
 ../lufa_files/Endpoint_AVR8.c \
+../lufa_files/Events.c \
 ../lufa_files/USBController_AVR8.c \
+../lufa_files/USBInterrupt_AVR8.c \
 ../lufa_files/USBTask.c \
 ../main.c
 
@@ -55,33 +59,49 @@ ASM_SRCS +=
 
 OBJS +=  \
 Descriptors.o \
+lufa_files/DeviceStandardReq.o \
 lufa_files/Device_AVR8.o \
+lufa_files/EndpointStream_AVR8.o \
 lufa_files/Endpoint_AVR8.o \
+lufa_files/Events.o \
 lufa_files/USBController_AVR8.o \
+lufa_files/USBInterrupt_AVR8.o \
 lufa_files/USBTask.o \
 main.o
 
 OBJS_AS_ARGS +=  \
 Descriptors.o \
+lufa_files/DeviceStandardReq.o \
 lufa_files/Device_AVR8.o \
+lufa_files/EndpointStream_AVR8.o \
 lufa_files/Endpoint_AVR8.o \
+lufa_files/Events.o \
 lufa_files/USBController_AVR8.o \
+lufa_files/USBInterrupt_AVR8.o \
 lufa_files/USBTask.o \
 main.o
 
 C_DEPS +=  \
 Descriptors.d \
+lufa_files/DeviceStandardReq.d \
 lufa_files/Device_AVR8.d \
+lufa_files/EndpointStream_AVR8.d \
 lufa_files/Endpoint_AVR8.d \
+lufa_files/Events.d \
 lufa_files/USBController_AVR8.d \
+lufa_files/USBInterrupt_AVR8.d \
 lufa_files/USBTask.d \
 main.d
 
 C_DEPS_AS_ARGS +=  \
 Descriptors.d \
+lufa_files/DeviceStandardReq.d \
 lufa_files/Device_AVR8.d \
+lufa_files/EndpointStream_AVR8.d \
 lufa_files/Endpoint_AVR8.d \
+lufa_files/Events.d \
 lufa_files/USBController_AVR8.d \
+lufa_files/USBInterrupt_AVR8.d \
 lufa_files/USBTask.d \
 main.d
 
@@ -106,7 +126,21 @@ LINKER_SCRIPT_DEP+=
 	@echo Finished building: $<
 	
 
+lufa_files/DeviceStandardReq.o: ../lufa_files/DeviceStandardReq.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
 lufa_files/Device_AVR8.o: ../lufa_files/Device_AVR8.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+lufa_files/EndpointStream_AVR8.o: ../lufa_files/EndpointStream_AVR8.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
@@ -120,7 +154,21 @@ lufa_files/Endpoint_AVR8.o: ../lufa_files/Endpoint_AVR8.c
 	@echo Finished building: $<
 	
 
+lufa_files/Events.o: ../lufa_files/Events.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
 lufa_files/USBController_AVR8.o: ../lufa_files/USBController_AVR8.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+lufa_files/USBInterrupt_AVR8.o: ../lufa_files/USBInterrupt_AVR8.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

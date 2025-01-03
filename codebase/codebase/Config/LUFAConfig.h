@@ -39,8 +39,7 @@
 		// LUFA Buffer Options
 		#define USB_STREAM_TIMEOUT_MS            100
 		#define RING_BUFFER_SIZE                 256
-		#define INTERRUPT_CONTROL_ENDPOINT
-
+		#define INTERRUPT_CONTROL_ENDPOINT		1
 #endif
 
 

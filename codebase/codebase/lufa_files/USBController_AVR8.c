@@ -135,7 +135,6 @@ void USB_ResetInterface(void)
 
 	USB_INT_DisableAllInterrupts();
 	USB_INT_ClearAllInterrupts();
-
 	USB_Controller_Reset();
 
 	#if defined(USB_CAN_BE_BOTH)
