@@ -66,8 +66,7 @@ lufa_files/USBTask.d lufa_files/USBTask.o: ../lufa_files/USBTask.c \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../EndpointStream.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../AVR8/EndpointStream_AVR8.h \
  ../lufa_files/Events.h ../lufa_files/StdRequestType.h \
- ../lufa_files/StdDescriptors.h \
- ../../lufa/LUFA/Drivers/USB/Core/DeviceStandardReq.h
+ ../lufa_files/StdDescriptors.h ../lufa_files/DeviceStandardReq.h
 
 ../lufa_files/USBTask.h:
 
@@ -209,4 +208,4 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../lufa_files/StdDescriptors.h:
 
-../../lufa/LUFA/Drivers/USB/Core/DeviceStandardReq.h:
+../lufa_files/DeviceStandardReq.h:
