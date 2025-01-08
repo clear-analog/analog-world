@@ -15,19 +15,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   5 .debug_aranges 00000270  00000000  00000000  00000db8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   0000467a  00000000  00000000  00001028  2**0
+  6 .debug_info   0000469e  00000000  00000000  00001028  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 000015f6  00000000  00000000  000056a2  2**0
+  7 .debug_abbrev 000015f6  00000000  00000000  000056c6  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00002f45  00000000  00000000  00006c98  2**0
+  8 .debug_line   00002f45  00000000  00000000  00006cbc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000704  00000000  00000000  00009be0  2**2
+  9 .debug_frame  00000704  00000000  00000000  00009c04  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00001aff  00000000  00000000  0000a2e4  2**0
+ 10 .debug_str    00001b0b  00000000  00000000  0000a308  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00002cce  00000000  00000000  0000bde3  2**0
+ 11 .debug_loc    00002cce  00000000  00000000  0000be13  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000498  00000000  00000000  0000eab1  2**0
+ 12 .debug_ranges 00000498  00000000  00000000  0000eae1  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -91,12 +91,11 @@ Disassembly of section .text:
   f0:	04 03 09 04                                         ....
 
 000000f4 <ConfigurationDescriptor>:
-  f4:	09 02 20 00 01 01 00 80 32 09 04 00 00 02 ff 00     .. .....2.......
- 104:	00 00 07 05 81 02 40 00 01 07 05 02 02 40 00 01     ......@......@..
+	...
 
 00000114 <DeviceDescriptor>:
- 114:	12 01 00 02 ff 00 00 40 eb 03 48 20 00 01 01 02     .......@..H ....
- 124:	03 01                                               ..
+ 114:	12 01 00 00 00 00 00 40 eb 03 2d e5 02 00 00 00     .......@..-.....
+	...
 
 00000126 <__ctors_end>:
  126:	11 24       	eor	r1, r1

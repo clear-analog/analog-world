@@ -41,6 +41,10 @@ Discarded input sections
  .text          0x00000000        0x0 Descriptors.o
  .data          0x00000000        0x0 Descriptors.o
  .bss           0x00000000        0x0 Descriptors.o
+ .progmem.data.schlongConfigurationDescriptor
+                0x00000000       0x20 Descriptors.o
+ .progmem.data.penisDeviceDescriptor
+                0x00000000       0x12 Descriptors.o
  .text          0x00000000        0x0 main.o
  .data          0x00000000        0x0 main.o
  .bss           0x00000000        0x0 main.o
@@ -778,18 +782,18 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x467a
+.debug_info     0x00000000     0x469e
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x6ba C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega16u2/avr35/crtatmega16u2.o
- .debug_info    0x000006ba      0x634 Descriptors.o
- .debug_info    0x00000cee      0x542 main.o
- .debug_info    0x00001230      0x79d lufa_files/DeviceStandardReq.o
- .debug_info    0x000019cd     0x17bb lufa_files/EndpointStream_AVR8.o
- .debug_info    0x00003188      0x620 lufa_files/Endpoint_AVR8.o
- .debug_info    0x000037a8       0xde lufa_files/Events.o
- .debug_info    0x00003886      0x4a2 lufa_files/USBController_AVR8.o
- .debug_info    0x00003d28      0x6ea lufa_files/USBInterrupt_AVR8.o
- .debug_info    0x00004412      0x268 lufa_files/USBTask.o
+ .debug_info    0x000006ba      0x658 Descriptors.o
+ .debug_info    0x00000d12      0x542 main.o
+ .debug_info    0x00001254      0x79d lufa_files/DeviceStandardReq.o
+ .debug_info    0x000019f1     0x17bb lufa_files/EndpointStream_AVR8.o
+ .debug_info    0x000031ac      0x620 lufa_files/Endpoint_AVR8.o
+ .debug_info    0x000037cc       0xde lufa_files/Events.o
+ .debug_info    0x000038aa      0x4a2 lufa_files/USBController_AVR8.o
+ .debug_info    0x00003d4c      0x6ea lufa_files/USBInterrupt_AVR8.o
+ .debug_info    0x00004436      0x268 lufa_files/USBTask.o
 
 .debug_abbrev   0x00000000     0x15f6
  *(.debug_abbrev)
@@ -829,26 +833,26 @@ END GROUP
  .debug_frame   0x000005cc       0xfc lufa_files/USBInterrupt_AVR8.o
  .debug_frame   0x000006c8       0x3c lufa_files/USBTask.o
 
-.debug_str      0x00000000     0x1aff
+.debug_str      0x00000000     0x1b0b
  *(.debug_str)
  .debug_str     0x00000000      0x262 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega16u2/avr35/crtatmega16u2.o
- .debug_str     0x00000262      0x6d7 Descriptors.o
-                                0x761 (size before relaxing)
- .debug_str     0x00000939      0x223 main.o
+ .debug_str     0x00000262      0x6e3 Descriptors.o
+                                0x796 (size before relaxing)
+ .debug_str     0x00000945      0x223 main.o
                                 0x3d3 (size before relaxing)
- .debug_str     0x00000b5c      0x518 lufa_files/DeviceStandardReq.o
+ .debug_str     0x00000b68      0x518 lufa_files/DeviceStandardReq.o
                                 0x744 (size before relaxing)
- .debug_str     0x00001074      0x4e3 lufa_files/EndpointStream_AVR8.o
+ .debug_str     0x00001080      0x4e3 lufa_files/EndpointStream_AVR8.o
                                 0x833 (size before relaxing)
- .debug_str     0x00001557      0x22b lufa_files/Endpoint_AVR8.o
+ .debug_str     0x00001563      0x22b lufa_files/Endpoint_AVR8.o
                                 0x5f3 (size before relaxing)
- .debug_str     0x00001782       0x48 lufa_files/Events.o
+ .debug_str     0x0000178e       0x48 lufa_files/Events.o
                                 0x1a6 (size before relaxing)
- .debug_str     0x000017ca      0x1f3 lufa_files/USBController_AVR8.o
+ .debug_str     0x000017d6      0x1f3 lufa_files/USBController_AVR8.o
                                 0x4ca (size before relaxing)
- .debug_str     0x000019bd      0x10e lufa_files/USBInterrupt_AVR8.o
+ .debug_str     0x000019c9      0x10e lufa_files/USBInterrupt_AVR8.o
                                 0x53c (size before relaxing)
- .debug_str     0x00001acb       0x34 lufa_files/USBTask.o
+ .debug_str     0x00001ad7       0x34 lufa_files/USBTask.o
                                 0x35d (size before relaxing)
 
 .debug_loc      0x00000000     0x2cce
