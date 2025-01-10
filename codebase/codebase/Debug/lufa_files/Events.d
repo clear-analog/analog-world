@@ -30,8 +30,7 @@ lufa_files/Events.d lufa_files/Events.o: ../lufa_files/Events.c \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Endianness.h \
- ../../lufa/LUFA/Drivers/USB/Core/USBMode.h \
- ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h
+ ../lufa_files/USBMode.h
 
 ../lufa_files/Events.h:
 
@@ -95,6 +94,4 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Endianness.h:
 
-../../lufa/LUFA/Drivers/USB/Core/USBMode.h:
-
-../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h:
+../lufa_files/USBMode.h:

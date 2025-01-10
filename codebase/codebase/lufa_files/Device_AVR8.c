@@ -28,8 +28,7 @@
   this software.
 */
 
-		#include "../Config/LUFAConfig.h"
-		#include "../lufa_files/Common.h"
+#include "../../../../Common/Common.h"
 #if (ARCH == ARCH_AVR8)
 
 #define  __INCLUDE_FROM_USB_DRIVER

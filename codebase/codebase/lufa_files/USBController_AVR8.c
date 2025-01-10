@@ -28,8 +28,7 @@
   this software.
 */
 
-		#include "../Config/LUFAConfig.h"
-		#include "../lufa_files/Common.h"
+#include "../../../../Common/Common.h"
 #if (ARCH == ARCH_AVR8)
 
 #define  __INCLUDE_FROM_USB_DRIVER
@@ -135,6 +134,7 @@ void USB_ResetInterface(void)
 
 	USB_INT_DisableAllInterrupts();
 	USB_INT_ClearAllInterrupts();
+
 	USB_Controller_Reset();
 
 	#if defined(USB_CAN_BE_BOTH)

@@ -1,17 +1,17 @@
 lufa_files/USBTask.d lufa_files/USBTask.o: ../lufa_files/USBTask.c \
- ../lufa_files/USBTask.h ../lufa_files/../Config/LUFAConfig.h \
- ../lufa_files/../lufa_files/Common.h \
+ ../lufa_files/USBTask.h \
+ ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stdint.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\stdint.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stdbool.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stddef.h \
- ../lufa_files/../lufa_files/Architectures.h \
- ../lufa_files/../lufa_files/BoardTypes.h \
- ../lufa_files/../lufa_files/ArchitectureSpecific.h \
- ../lufa_files/../lufa_files/CompilerSpecific.h \
- ../lufa_files/../lufa_files/Attributes.h \
- ../lufa_files/../lufa_files/../Config/LUFAConfig.h \
+ ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Architectures.h \
+ ../../lufa/LUFA/Drivers/USB/Core/../../../Common/BoardTypes.h \
+ ../../lufa/LUFA/Drivers/USB/Core/../../../Common/ArchitectureSpecific.h \
+ ../../lufa/LUFA/Drivers/USB/Core/../../../Common/CompilerSpecific.h \
+ ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Attributes.h \
+ ../../lufa/LUFA/../../codebase/Config/LUFAConfig.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sfr_defs.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\inttypes.h \
@@ -29,11 +29,8 @@ lufa_files/USBTask.d lufa_files/USBTask.o: ../lufa_files/USBTask.c \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
- ../lufa_files/../lufa_files/Endianness.h \
- ../../lufa/LUFA/Drivers/USB/Core/USBMode.h \
- ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h \
- ../../lufa/LUFA/Drivers/USB/Core/USBController.h \
- ../../lufa/LUFA/Drivers/USB/Core/USBMode.h \
+ ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Endianness.h \
+ ../lufa_files/USBMode.h ../lufa_files/USBController.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/USBController_AVR8.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../../../../Common/Common.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../USBMode.h \
@@ -70,9 +67,7 @@ lufa_files/USBTask.d lufa_files/USBTask.o: ../lufa_files/USBTask.c \
 
 ../lufa_files/USBTask.h:
 
-../lufa_files/../Config/LUFAConfig.h:
-
-../lufa_files/../lufa_files/Common.h:
+../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stdint.h:
 
@@ -84,17 +79,17 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stddef.h:
 
-../lufa_files/../lufa_files/Architectures.h:
+../../lufa/LUFA/Drivers/USB/Core/../../../Common/Architectures.h:
 
-../lufa_files/../lufa_files/BoardTypes.h:
+../../lufa/LUFA/Drivers/USB/Core/../../../Common/BoardTypes.h:
 
-../lufa_files/../lufa_files/ArchitectureSpecific.h:
+../../lufa/LUFA/Drivers/USB/Core/../../../Common/ArchitectureSpecific.h:
 
-../lufa_files/../lufa_files/CompilerSpecific.h:
+../../lufa/LUFA/Drivers/USB/Core/../../../Common/CompilerSpecific.h:
 
-../lufa_files/../lufa_files/Attributes.h:
+../../lufa/LUFA/Drivers/USB/Core/../../../Common/Attributes.h:
 
-../lufa_files/../lufa_files/../Config/LUFAConfig.h:
+../../lufa/LUFA/../../codebase/Config/LUFAConfig.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h:
 
@@ -130,15 +125,11 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h:
 
-../lufa_files/../lufa_files/Endianness.h:
+../../lufa/LUFA/Drivers/USB/Core/../../../Common/Endianness.h:
 
-../../lufa/LUFA/Drivers/USB/Core/USBMode.h:
+../lufa_files/USBMode.h:
 
-../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h:
-
-../../lufa/LUFA/Drivers/USB/Core/USBController.h:
-
-../../lufa/LUFA/Drivers/USB/Core/USBMode.h:
+../lufa_files/USBController.h:
 
 ../../lufa/LUFA/Drivers/USB/Core/AVR8/USBController_AVR8.h:
 

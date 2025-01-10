@@ -1,6 +1,5 @@
 lufa_files/DeviceStandardReq.d lufa_files/DeviceStandardReq.o: \
- ../lufa_files/DeviceStandardReq.c \
- ../../lufa/LUFA/Drivers/USB/Core/USBMode.h \
+ ../lufa_files/DeviceStandardReq.c ../lufa_files/USBMode.h \
  ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stdint.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\stdint.h \
@@ -31,14 +30,9 @@ lufa_files/DeviceStandardReq.d lufa_files/DeviceStandardReq.o: \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Endianness.h \
- ../lufa_files/DeviceStandardReq.h \
- ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h \
- ../lufa_files/StdDescriptors.h ../lufa_files/Events.h \
- ../lufa_files/StdRequestType.h ../lufa_files/USBTask.h \
- ../lufa_files/../Config/LUFAConfig.h \
- ../lufa_files/../lufa_files/Common.h \
- ../../lufa/LUFA/Drivers/USB/Core/USBController.h \
- ../../lufa/LUFA/Drivers/USB/Core/USBMode.h \
+ ../lufa_files/DeviceStandardReq.h ../lufa_files/StdDescriptors.h \
+ ../lufa_files/Events.h ../lufa_files/StdRequestType.h \
+ ../lufa_files/USBTask.h ../lufa_files/USBController.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/USBController_AVR8.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../../../../Common/Common.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../USBMode.h \
@@ -67,7 +61,7 @@ lufa_files/DeviceStandardReq.d lufa_files/DeviceStandardReq.o: \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../EndpointStream.h \
  ../../lufa/LUFA/Drivers/USB/Core/AVR8/../AVR8/EndpointStream_AVR8.h
 
-../../lufa/LUFA/Drivers/USB/Core/USBMode.h:
+../lufa_files/USBMode.h:
 
 ../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h:
 
@@ -131,8 +125,6 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../lufa_files/DeviceStandardReq.h:
 
-../../lufa/LUFA/Drivers/USB/Core/../../../Common/Common.h:
-
 ../lufa_files/StdDescriptors.h:
 
 ../lufa_files/Events.h:
@@ -141,13 +133,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../lufa_files/USBTask.h:
 
-../lufa_files/../Config/LUFAConfig.h:
-
-../lufa_files/../lufa_files/Common.h:
-
-../../lufa/LUFA/Drivers/USB/Core/USBController.h:
-
-../../lufa/LUFA/Drivers/USB/Core/USBMode.h:
+../lufa_files/USBController.h:
 
 ../../lufa/LUFA/Drivers/USB/Core/AVR8/USBController_AVR8.h:
 
