@@ -83,6 +83,13 @@ void SetupHardware(void)
 
 	/* Start the ADC conversion in free running mode */
 	//ADC_StartReading(ADC_REFERENCE_AVCC | ADC_RIGHT_ADJUSTED | ADC_GET_CHANNEL_MASK(MIC_IN_ADC_CHANNEL));
+
+	// SPI Configuration
+	SPI_DDR |= (1 << pin_MOSI) | (1 << pin_SCK) | (1 << pin_SS); //MOSI, SCK, SS are outputs
+	SPI_DDR &= ~(1 << pin_MISO);
+
+	// Setting Clock rate to fck/16 and enabling SPI as master.
+	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (0 << CPOL) | (0 << CPHA);
 }
 
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs, and
@@ -133,8 +140,7 @@ void EVENT_USB_Device_ConfigurationChanged(void)
  *  the device from the USB host before passing along unhandled control requests to the library for processing
  *  internally.
  */
-void EVENT_USB_Device_ControlRequest(void)
-{
+void EVENT_USB_Device_ControlRequest(void) {
 	/* Process General and Audio specific control requests */
 	switch (USB_ControlRequest.bRequest)
 	{
@@ -214,8 +220,7 @@ void EVENT_USB_Device_ControlRequest(void)
 }
 
 /** ISR to handle the reloading of the data endpoint with the next sample. */
-ISR(TIMER0_COMPA_vect, ISR_BLOCK)
-{
+ISR(TIMER0_COMPA_vect, ISR_BLOCK) {
 	uint8_t PrevEndpoint = Endpoint_GetCurrentEndpoint();
 
 	/* Select the audio stream endpoint */
@@ -241,4 +246,55 @@ ISR(TIMER0_COMPA_vect, ISR_BLOCK)
 	}
 
 	Endpoint_SelectEndpoint(PrevEndpoint);
+}
+
+/* This function will power up ADC */
+void ADS1299_PWR_UP(void) {
+
+    /* Pull power down and reset pins low */
+    PORTB &= ~(1 << pin_PWR_DWN);
+    PORTB &= ~(1 << pin_RST);
+
+    /* Wait for 2^10 = 1024 SCK cycles */
+    _delay_us(1024);
+
+    /* Pull power down and reset pins high */
+    PORTB |= (1 << pin_PWR_DWN);
+    PORTB |= (1 << pin_RST);
+
+    /* Wait for 2^20 = 1048576 SCK cycles */
+    _delay_ms(1049);
+}
+
+/* This function implements delay in milliseconds using SCK cycles */
+void _delay_ms(uint16_t ms) {
+    /* Calculate number of SCK cycles for delay
+     * Each ms needs 1000 SCK cycles at 1MHz clock
+     * So multiply ms by 1000 to get total cycles needed */
+    uint32_t cycles = (uint32_t)ms * 1000;
+    
+    /* Count down cycles */
+    while(cycles--) {
+        /* One NOP instruction takes 1 clock cycle */
+        asm volatile("nop");
+    }
+}
+
+uint16_t SPI_RDATAC(void) {	
+	pin_SS = 0; // Set SS pin low
+	SPDR = 0b00010000;
+	while(!(SPSR & (1<<SPIF)));
+
+}
+
+// Use this to receive more than one byte
+uint8_t SPI_ReceiveByte(void) {
+	SPDR = 0;
+	while(!(SPSR & (1<<SPIF)));
+	uint8_t rcv = SPDR;
+	return rcv;
+}
+
+void ADC_REG_WR(uint8_t regAdd, uint8_t value) {
+	
 }

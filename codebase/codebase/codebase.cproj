@@ -276,6 +276,7 @@
   <ItemGroup>
     <Folder Include="Config" />
     <Folder Include="lufa_files" />
+    <Folder Include="Deprecated" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>
