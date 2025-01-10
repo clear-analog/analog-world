@@ -49,8 +49,7 @@ static uint32_t CurrentAudioSampleFrequency = 48000;
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
-int main(void)
-{
+int main(void) {
 	SetupHardware();
 
 	//LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
@@ -63,16 +62,15 @@ int main(void)
 }
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
-void SetupHardware(void)
-{
-#if (ARCH == ARCH_AVR8)
-	/* Disable watchdog if enabled by bootloader/fuses */
-	MCUSR &= ~(1 << WDRF);
-	wdt_disable();
+void SetupHardware(void) {
+	#if (ARCH == ARCH_AVR8)
+		/* Disable watchdog if enabled by bootloader/fuses */
+		MCUSR &= ~(1 << WDRF);
+		wdt_disable();
 
-	/* Disable clock division */
-	clock_prescale_set(clock_div_1);
-#endif
+		/* Disable clock division */
+		clock_prescale_set(clock_div_1);
+	#endif
 
 	/* Hardware Initialization */
 	//LEDs_Init();
@@ -89,7 +87,7 @@ void SetupHardware(void)
 	SPI_DDR &= ~(1 << pin_MISO);
 
 	// Setting Clock rate to fck/16 and enabling SPI as master.
-	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (0 << CPOL) | (0 << CPHA);
+	SPCR = (1 << SPE) | (1 << MSTR) | (1<<SPI2X) | (1 << SPR0) | (0 << CPOL) | (0 << CPHA);
 }
 
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs, and
@@ -280,12 +278,11 @@ void _delay_ms(uint16_t ms) {
     }
 }
 
-uint16_t SPI_RDATAC(void) {	
+/* uint16_t SPI_RDATAC(void) {	
 	pin_SS = 0; // Set SS pin low
 	SPDR = 0b00010000;
 	while(!(SPSR & (1<<SPIF)));
-
-}
+} */
 
 // Use this to receive more than one byte
 uint8_t SPI_ReceiveByte(void) {
@@ -295,6 +292,137 @@ uint8_t SPI_ReceiveByte(void) {
 	return rcv;
 }
 
-void ADC_REG_WR(uint8_t regAdd, uint8_t value) {
-	
+// This function will set SS pin High or Low (following boolean input)
+void SET_SPI_SS(bool input) {
+	if (input) pin_SS = 1;
+	else if (!input) pin_SS = 0;
 }
+
+// This function will set PWR_DWN pin High or Low (following boolean input)
+void SET_PWR_DWN(bool input) {
+	if (input) pin_PWR_DWN = 1;
+	else if (!input) pin_PWR_DWN = 0;
+}
+
+// This function will set RST pin High or Low (following boolean input)
+void SET_RST(bool input) {
+	if (input) pin_RST = 1;
+	else if (!input) pin_RST = 0;
+}
+
+// This function sets the CLK SEL pin
+void SET_CLK_SEL(bool input) {
+	if (input) pin_CLK_SEL = 1;
+	else if (!input) pin_CLK_SEL = 0;
+}
+
+// Send a single byte via SPI and wait for transmission to complete. If cont = true, wont mess with SS pin at all
+void SPI_SendByte(uint8_t byte, bool cont) {
+	if (!cont) {
+		SET_SPI_SS(false);
+		SPDR = byte;                      // Start transmission by writing to SPDR
+		while(!(SPSR & (1<<SPIF)));       // Wait for transmission to complete
+		SET_SPI_SS(true);
+	}
+
+	else {
+		SPDR = byte;
+		while(!(SPSR & (1 << SPIF)));
+	}
+}
+
+// This function will write numReg registers starting at regAdd, obtaining necessary values from values byte array
+// This function can work in any mode
+void ADS1299_WREG(uint8_t regAdd, uint8_t* values, uint8_t numRegs) {
+	SET_SPI_SS(false); // Set SS low
+	
+	// Send first byte: 001r rrrr where rrrrr is register address
+	SPI_SendByte(0x40 | (regAdd & 0x1F), true); // Send byte in continous mode
+	
+	// Send second byte: 000n nnnn where nnnnn is number of registers - 1
+	SPI_SendByte(numRegs - 1, true);
+	
+	// Send the values for each register
+	for(uint8_t i = 0; i < numRegs; i++) {
+		SPI_SendByte(values[i], true);
+	}
+	
+	SET_SPI_SS(true); // Set SS high
+}
+
+// This function will read numReg registers starting at regAdd and store the data in the provided buffer
+// If ADS1299 is in RDATAC mode, SDATAC cmd must be sent first
+void ADS1299_RREG(uint8_t regAdd, uint8_t* buffer, uint8_t numRegs) {
+    // If in RDATAC mode, must send SDATAC first
+    if (_ADS1299_MODE == ADS1299_MODE_RDATAC) {
+        ADS1299_SDATAC();
+    }
+
+    SET_SPI_SS(false); // Set SS low
+    
+    // Send first byte: 001r rrrr where rrrrr is register address
+    SPI_SendByte(0x20 | (regAdd & 0x1F), true); 
+    
+    // Send second byte: 000n nnnn where nnnnn is number of registers - 1
+    SPI_SendByte(numRegs - 1, true);
+    
+    // For reading registers, we need to send dummy bytes (0x00) to generate
+    // the clock signal for the ADS1299 to send data back
+    for(uint8_t i = 0; i < numRegs; i++) {
+        SPDR = 0x00; // Send dummy byte to generate clock
+        while(!(SPSR & (1<<SPIF))); // Wait for transfer to complete
+        buffer[i] = SPDR; // Store the received data in the buffer
+    }
+    
+    SET_SPI_SS(true); // Set SS high
+}
+
+// This function is to send the SDATAC cmd to ADS1299
+void ADS1299_SDATAC(void) {
+	SPI_SendByte(CMD_ADC_SDATAC);
+	_ADS1299_MODE = ADS1299_MODE_SDATAC;
+}
+
+// This function is to send RDATAC cmd to ADS1299
+void ADS1299_RDATAC(void) {
+	SPI_SendByte(CMD_ADC_RDATAC);
+	_ADS1299_MODE = ADS1299_MODE_RDATAC;
+}
+
+// This function handles LED debugging based on device mode
+bool lightUp(uint8_t num, uint8_t GPIO_pin, uint16_t time) {
+	uint16_t timer = time / num;
+	for (int i = 0; i < num; i++) {
+		GPIO_pin = 1;
+		//delay()
+		GPIO_pin = 0;
+		//delay()
+	}
+
+	return true;
+}
+
+/* 
+	This function is to setup the ADS1299
+*/
+void ADS1299_SETUP(void) {
+	SET_CLK_SEL(true);
+	wait();
+	SET_PWR_DWN(false);
+	SET_RST(false);
+	wait();
+	SET_PWR_DWN(true);
+	SET_RST(true);
+	wait10x();
+	ADS1299_SDATAC();
+	uint8_t refbuf[1] = [0b11100000];
+	ADS1299_WREG(0x3h, &refbuf, 1);
+	wait();
+}
+
+/* Configure SPI: Master mode, MSB first, SCK freq = fosc/4 = 4MHz */
+SPCR = (1<<SPE)|(1<<MSTR);    // Enable SPI, Master mode
+SPSR = (1<<SPI2X);            // Double SPI speed for 4MHz
+
+/* Set SS low to begin transmission */
+PORTB &= ~(1<<pin_SS);
