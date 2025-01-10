@@ -294,26 +294,22 @@ uint8_t SPI_ReceiveByte(void) {
 
 // This function will set SS pin High or Low (following boolean input)
 void SET_SPI_SS(bool input) {
-	if (input) pin_SS = 1;
-	else if (!input) pin_SS = 0;
+	pin_SS = (uint8_t) input;
 }
 
 // This function will set PWR_DWN pin High or Low (following boolean input)
 void SET_PWR_DWN(bool input) {
-	if (input) pin_PWR_DWN = 1;
-	else if (!input) pin_PWR_DWN = 0;
+	pin_PWR_DWN = (uint8_t) input;
 }
 
 // This function will set RST pin High or Low (following boolean input)
 void SET_RST(bool input) {
-	if (input) pin_RST = 1;
-	else if (!input) pin_RST = 0;
+	pin_RST = (uint8_t) input;
 }
 
 // This function sets the CLK SEL pin
 void SET_CLK_SEL(bool input) {
-	if (input) pin_CLK_SEL = 1;
-	else if (!input) pin_CLK_SEL = 0;
+	pin_CLK_SEL = (uint8_t) pin_CLK_SEL;
 }
 
 // Send a single byte via SPI and wait for transmission to complete. If cont = true, wont mess with SS pin at all
