@@ -32,3 +32,11 @@ lufa_files\USBTask.c
 
 main.c
 
+Tests\test_adc.c
+
+Tests\test_led.c
+
+Tests\test_spi.c
+
+Tests\test_usb.c
+

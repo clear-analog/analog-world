@@ -41,7 +41,7 @@
  */
 
 #ifndef _APP_CONFIG_H_
-#define _APP_CONFIG_H_	
+#define _APP_CONFIG_H_
 	// Deez Includes
 	#include <avr/io.h>
 	#include <avr/wdt.h>
@@ -53,32 +53,37 @@
 	#include <LUFA/Drivers/Board/LEDs.h>
 	#include <LUFA/Drivers/Board/Buttons.h>
 	#include <LUFA/Drivers/Peripheral/ADC.h>
-	
-	/* Definitions */
-	#define pin_SS 				PORTB0
-	#define pin_SCK 			PORTB1
-	#define pin_MOSI 			PORTB2
-	#define pin_MISO 			PORTB3
-	#define ddr_SPI 			DDRB
-	#define port_SPI 			PORTB
-	#define port_LED			PORTB
-	#define pin_LED_DEBUG 		PORTB6
-	#define pin_CLK_SEL			PORTD4
-	#define pin_PWR_DWN 		PIN1
-	#define pin_RST 			PIN2
-	#define reg_ADC_register 	0x02
-	#define pin_ADC_DRDY 		0x03
 
-	// ADC Register Settings
-	#define CMD_ADC_SDATAC 		0b00010001
+	/* Definitions */
+	#define pin_SS 				PORTB7
+	#define pin_SCK 			PORTB6
+	#define pin_MOSI 			PORTB5
+	#define pin_MISO 			PORTB4
+	#define ddr_SPI 			DDRB
+	#define ddr_GPIO			DDRD
+	#define port_SPI 			PORTB
+	#define port_GPIO			PORTD
+	#define pin_LED_DEBUG 		PORTD7
+	#define pin_CLK_SEL			PORTD4 // NOT NECESSARY
+	#define pin_PWR_DWN 		PORTD0
+	#define pin_RST 			PORTD1
+	#define pin_START			PORTD2
+	#define reg_ADC_register 	0x02
+	#define pin_ADC_DRDY 		PORTD3
+	#define pin_SRB1			PORTD4
+	#define pin_SRB2			PORTD5
+	#define CMD_ADC_SDATAC 		0b00010001 	// ADC Register Settings
 	#define CMD_ADC_RDATAC 		0b00010000
-	struct Deez {
+
+	/* Data Structure for controlling registers */
+	typedef struct Deez {
 		int add;
 		int reg_val;
-	} Nutz;
+	} regVal_pair;
 
+	#define size_reg_ls 22
 	// Registers to setup. If -2, end WREG.
-	struct Nutz ADS1299_REGISTER_LS[] = {
+	static const regVal_pair ADS1299_REGISTER_LS[22] = {
 		{0x01, 0b10110000},
 		{0x02, 0b11010000},
 		{0x03, 0b11101100},
@@ -103,7 +108,7 @@
 		{0x17, 0}
 	};
 
-	bool lightUp(uint8_t num, uint8_t pin, uint16_t time); // Board Debugging Function
+	bool lightUp(uint8_t num, uint8_t pin, float time); // Board Debugging Function
 
 	/* USB Functions */
 	void EVENT_USB_Device_Connect(void);
@@ -112,14 +117,12 @@
 	void EVENT_USB_Device_ControlRequest(void);
 	void SetupHardware(void); // This function configures {ATMEGA: SPI & USB}, {ADC: SPI and Registers}
 
-	// ADS1299 operation modes
-	#define ADS1299_MODE_SDATAC 0
-	#define ADS1299_MODE_RDATAC 1
-	#define ADS1299_MODE_WAKEUP 10
-	uint8_t _ADS1299_MODE;
-
-	// Encapsulations of ADS1299 commands
-	void ADS1299_WREG(uint8_t, uint8_t*, uint8_t);
+	uint8_t _ADS1299_MODE;			// Variable of current ADS1299 mode
+	#define ADS1299_MODE_SDATAC 0 	// ADS1299 post SDATAC cmd
+	#define ADS1299_MODE_RDATAC 1	// ADS1299 post RDATAC cmd
+	#define ADS1299_MODE_RADIOSILENCE 2 // ADS1299 when SPI not working
+	#define ADS1299_MODE_WAKEUP 10	// Default ADS1299 mode during power up
+	void ADS1299_WREG(uint8_t, uint8_t*, uint8_t); 	// Encapsulations of ADS1299 commands
 	void ADS1299_RREG(uint8_t, uint8_t*, uint8_t);
 	void ADS1299_SETUP(void);
 	void ADS1299_SDATAC(void);
@@ -128,10 +131,31 @@
 	// SPI Core Functions
 	void SPI_SendByte(uint8_t byte, bool cont);
 	void delay_sck_cycles(uint32_t);
+	uint32_t time2sck(float time); // Conversion function with time in milliseconds
 	static inline void SET_CLK_SEL(const bool input) __attribute__((always_inline));
 	static inline void SET_PWR_DWN(const bool input) __attribute__((always_inline));
 	static inline void SET_SPI_SS(const bool input) __attribute__((always_inline));
 	static inline void SET_RST(const bool input) __attribute__((always_inline));
+
+	// This function will set the SS pin HIGH or LOW (Following boolean input)
+	static inline void SET_SPI_SS(const bool input) {
+		input ? (port_SPI |= (1 << pin_SS)) : (port_SPI &= ~(1 << pin_SS));
+	}
+
+	// This function will set the PWR_DWN pin HIGH or LOW (following boolean input)
+	static inline void SET_PWR_DWN(const bool input) {
+		input ? (port_GPIO |= (1 << pin_PWR_DWN)) : (port_GPIO &= ~(1 << pin_PWR_DWN));
+	}
+
+	// This function will set RST pin HIGHs or LOW (following boolean input)
+	static inline void SET_RST(const bool input) {
+		input ? (port_GPIO |= (1 << pin_CLK_SEL)) : (port_GPIO &= ~(1 << pin_CLK_SEL));
+	}
+
+	// This function sets the CLK SEL pin HIGH or LOW
+	static inline void SET_CLK_SEL(const bool input) {
+		input ? (port_GPIO |= (1 << pin_CLK_SEL)) : (port_GPIO &= ~(1 << pin_CLK_SEL));
+	}
 
 	/* Unnecessary Things From LUFA */
 	#define SAMPLE_MAX_RANGE          0xFFFF //Maximum audio sample value for the microphone input.

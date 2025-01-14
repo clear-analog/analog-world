@@ -52,12 +52,55 @@ int main(void) {
 	//LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
 
+	#ifdef TEST_ALL
+		#define TEST_LED
+		#define TEST_SPI
+		#define TEST_ADC
+		#define TEST_USB
+	#endif
+
+	#ifdef TEST_LED
+		#include "Tests/test_led.c"
+		test_led();
+	#endif
+
+	#ifdef TEST_SPI
+		#include "Tests/test_spi.c"
+		test_spi();
+	#endif
+
+	#ifdef TEST_ADC
+		#include "Tests/test_adc.c"
+		test_adc();
+	#endif
+
+	#ifdef TEST_USB
+		#include "Tests/test_USB.c"
+		test_usb();
+	#endif
+
+	DDRD |= (1 << pin_LED_DEBUG);
+	//port_GPIO |= (1 << pin_LED_DEBUG);
+	lightUp(5, pin_LED_DEBUG, 2.0);
+	delay_sck_cycles(2^18);
+	lightUp(10, pin_LED_DEBUG, 2.0);
+	port_GPIO |= (1 << pin_LED_DEBUG);
+
+	int count = 2;
+	uint8_t buffon[1];
+
 	for (;;) {
 		USB_USBTask();
+		delay_sck_cycles(2^23);
+		if (count < 3) {
+			ADS1299_RREG(0x0B, buffon, 1);
+			lightUp(buffon[0], pin_LED_DEBUG, 2.0);
+		}
+		count++;
 	}
 }
 
-/** Configures the board hardware and chip peripherals for the demo's functionality. */
+/** Configures the board hardware and chip peripherals . */
 void SetupHardware(void) {
 	#if (ARCH == ARCH_AVR8)
 		/* Disable watchdog if enabled by bootloader/fuses */
@@ -84,6 +127,9 @@ void SetupHardware(void) {
 
 	// Setting Clock rate to fck/16 and enabling SPI as master.
 	SPCR = (1 << SPE) | (1 << MSTR) | (1<<SPI2X) | (1 << SPR0) | (0 << CPOL) | (0 << CPHA);
+	ADS1299_SETUP();
+	
+	delay_sck_cycles(2^15);
 }
 
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs, and
@@ -247,26 +293,6 @@ uint8_t SPI_ReceiveByte(void) {
 	return rcv;
 }
 
-// This function will set the SS pin HIGH or LOW (Following boolean input)
-static inline void SET_SPI_SS(const bool input) {
-	input ? (port_SPI |= (1 << pin_SS)) : (port_SPI &= ~(1 << pin_SS));
-}
-
-// This function will set the PWR_DWN pin HIGH or LOW (following boolean input)
-static inline void SET_PWR_DWN(const bool input) {
-	input ? (PORTB |= (1 << pin_PWR_DWN)) : (PORTB &= ~(1 << pin_PWR_DWN));
-}
-
-// This function will set RST pin HIGHs or LOW (following boolean input)
-static inline void SET_RST(const bool input) {
-	input ? (PORTB |= (1 << pin_CLK_SEL)) : (PORTB &= ~(1 << pin_CLK_SEL));
-}
-
-// This function sets the CLK SEL pin HIGH or LOW
-static inline void SET_CLK_SEL(const bool input) {
-    input ? (PORTD |= (1 << pin_CLK_SEL)) : (PORTD &= ~(1 << pin_CLK_SEL));
-}
-
 // Send a single byte via SPI and wait for transmission to complete. If cont = true, wont mess with SS pin at all
 void SPI_SendByte(uint8_t byte, bool cont) {
 	if (!cont) {
@@ -341,17 +367,31 @@ void ADS1299_RDATAC(void) {
 }
 
 // This function handles LED debugging based on device mode
-bool lightUp(uint8_t num, uint8_t GPIO_pin, uint16_t time) {
-	uint32_t cycles = F_CPU * time / num; // Convert time into cycles, divide by number of times to blink in a second
+// Time in milliseconds
+// Number of cycles here is based on ATMEGA16U2 clock
+bool lightUp(uint8_t num, uint8_t GPIO_pin, float time) {
+	uint32_t cycles = (uint32_t)(F_CPU * (time/1000) / num); // Convert time into cycles, divide by number of times to blink in a second
 	for (int i = 0; i < num; i++) {
-		port_LED |= (1 << PORTB6);
-		delay_sck_cycles(cycles);
-		port_LED &= ~(1 << PORTB6);
-		GPIO_pin = 0;
-		delay_sck_cycles(cycles);
+		port_GPIO |= (1 << GPIO_pin);
+		delay_sck_cycles(cycles/2);
+		port_GPIO &= ~(1 << GPIO_pin);
+		delay_sck_cycles(cycles/2);
 	}
 
 	return true;
+}
+
+// This function converts time into SCK cycles assuming 4 MHz clock freq
+// Time in milliseconds
+uint32_t time2sck(float time) {
+    // Convert milliseconds to seconds
+    float seconds = time / 1000.0f;
+    
+    // Calculate number of clock cycles
+    // Clock frequency is 4MHz = 4,000,000 cycles/second
+    uint32_t cycles = (uint32_t)(4000000.0f * seconds);
+    
+    return cycles;
 }
 
 // This function handles delays with ISR
@@ -375,7 +415,7 @@ void delay_sck_cycles(uint32_t sck_cycles) {
 // This function sets up the ADS1299
 void ADS1299_SETUP(void) {
 	SET_CLK_SEL(true);
-	delay_sck_cycles(2^20);
+	delay_sck_cycles(2^20);  // Changed 2^20 to 1 << 20 for proper bit shifting
 	SET_PWR_DWN(false);
 	SET_RST(false);
 	delay_sck_cycles(2^20);
@@ -385,18 +425,18 @@ void ADS1299_SETUP(void) {
 	ADS1299_SDATAC();
 	uint8_t refbuf[] = {0b11100000};
 	ADS1299_WREG(0x3, refbuf, 1);
-	delay_sck_cycles(2^20);
+	delay_sck_cycles(2^ 20);
 
 	uint8_t i = 0;
-	while (i < 20) {
-		struct Nutz temp;
-		temp = ADS1299_REGISTER_LS[i];
-		if (temp.add == -2) {
+	while (i < size_reg_ls) {
+		const regVal_pair temp = ADS1299_REGISTER_LS[i];  // Initialize struct directly
+		if (temp.add == -2) {  // Use dot notation instead of arrow operator
 			i++;
 			continue;
 		}
-		uint8_t addy[] = {(uint8_t)temp.reg_val};
-		ADS1299_WREG(temp.add, addy, 1);
+		uint8_t value[] = {(uint8_t)temp.reg_val};  // Use dot notation
+		ADS1299_WREG(temp.add, value, 1);  // Use dot notation
+		delay_sck_cycles(10);
 		i++;
 	}
 }

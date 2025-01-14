@@ -35,7 +35,7 @@ LINKER_SCRIPT_DEP:=
 SUBDIRS :=  \
 ../Config \
 ../lufa_files \
-../Deprecated
+../Tests
 
 
 # Add inputs and outputs from these tool invocations to the build variables 
@@ -54,7 +54,11 @@ C_SRCS +=  \
 ../lufa_files/USBController_AVR8.c \
 ../lufa_files/USBInterrupt_AVR8.c \
 ../lufa_files/USBTask.c \
-../main.c
+../main.c \
+../Tests/test_adc.c \
+../Tests/test_led.c \
+../Tests/test_spi.c \
+../Tests/test_usb.c
 
 
 PREPROCESSING_SRCS += 
@@ -78,7 +82,11 @@ lufa_files/Pipe_AVR8.o \
 lufa_files/USBController_AVR8.o \
 lufa_files/USBInterrupt_AVR8.o \
 lufa_files/USBTask.o \
-main.o
+main.o \
+Tests/test_adc.o \
+Tests/test_led.o \
+Tests/test_spi.o \
+Tests/test_usb.o
 
 OBJS_AS_ARGS +=  \
 Descriptors.o \
@@ -95,7 +103,11 @@ lufa_files/Pipe_AVR8.o \
 lufa_files/USBController_AVR8.o \
 lufa_files/USBInterrupt_AVR8.o \
 lufa_files/USBTask.o \
-main.o
+main.o \
+Tests/test_adc.o \
+Tests/test_led.o \
+Tests/test_spi.o \
+Tests/test_usb.o
 
 C_DEPS +=  \
 Descriptors.d \
@@ -112,7 +124,11 @@ lufa_files/Pipe_AVR8.d \
 lufa_files/USBController_AVR8.d \
 lufa_files/USBInterrupt_AVR8.d \
 lufa_files/USBTask.d \
-main.d
+main.d \
+Tests/test_adc.d \
+Tests/test_led.d \
+Tests/test_spi.d \
+Tests/test_usb.d
 
 C_DEPS_AS_ARGS +=  \
 Descriptors.d \
@@ -129,7 +145,11 @@ lufa_files/Pipe_AVR8.d \
 lufa_files/USBController_AVR8.d \
 lufa_files/USBInterrupt_AVR8.d \
 lufa_files/USBTask.d \
-main.d
+main.d \
+Tests/test_adc.d \
+Tests/test_led.d \
+Tests/test_spi.d \
+Tests/test_usb.d
 
 OUTPUT_FILE_PATH +=codebase.elf
 
@@ -244,6 +264,34 @@ lufa_files/USBTask.o: ../lufa_files/USBTask.c
 	
 
 ./main.o: .././main.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+Tests/test_adc.o: ../Tests/test_adc.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+Tests/test_led.o: ../Tests/test_led.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+Tests/test_spi.o: ../Tests/test_spi.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+Tests/test_usb.o: ../Tests/test_usb.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=16000000UL -DF_USB=16000000UL -DARCH=AVR8 -DUSE_LUFA_CONFIG_HEADER -DMCU=atmega16u2  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include" -I"../../lufa" -I"../../lufa/LUFA" -I"../../lufa/LUFA/Drivers/USB/Core" -I"../../lufa/LUFA/Drivers/USB/Core/AVR8" -I"../../lufa/LUFA/Drivers/USB/Class/Common" -I"../../lufa/LUFA/Drivers/USB/Class/Device"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega16u2 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega16u2" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
