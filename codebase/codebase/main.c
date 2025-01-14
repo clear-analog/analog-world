@@ -35,8 +35,6 @@
  */
 
 #include "Config/AppConfig.h"
-#include "Config/LUFAConfig.h"
-#include <LUFA/Drivers/USB/USB.h>
 #include <stdlib.h>
 
 /** Flag to indicate if the streaming audio alternative interface has been selected by the host. */
@@ -44,7 +42,6 @@ static bool StreamingAudioInterfaceSelected = false;
 
 /** Current audio sampling frequency of the streaming audio endpoint. */
 static uint32_t CurrentAudioSampleFrequency = 48000;
-
 
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
@@ -55,8 +52,7 @@ int main(void) {
 	//LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
 
-	for (;;)
-	{
+	for (;;) {
 		USB_USBTask();
 	}
 }
@@ -81,10 +77,10 @@ void SetupHardware(void) {
 
 	/* Start the ADC conversion in free running mode */
 	//ADC_StartReading(ADC_REFERENCE_AVCC | ADC_RIGHT_ADJUSTED | ADC_GET_CHANNEL_MASK(MIC_IN_ADC_CHANNEL));
-
-	// SPI Configuration
-	SPI_DDR |= (1 << pin_MOSI) | (1 << pin_SCK) | (1 << pin_SS); //MOSI, SCK, SS are outputs
-	SPI_DDR &= ~(1 << pin_MISO);
+	_ADS1299_MODE = ADS1299_MODE_WAKEUP;
+	// SPI Configuration (ddr_SPI = DDRB)
+	ddr_SPI |= (1 << pin_MOSI) | (1 << pin_SCK) | (1 << pin_SS); //MOSI, SCK, SS are outputs
+	ddr_SPI &= ~(1 << pin_MISO);
 
 	// Setting Clock rate to fck/16 and enabling SPI as master.
 	SPCR = (1 << SPE) | (1 << MSTR) | (1<<SPI2X) | (1 << SPR0) | (0 << CPOL) | (0 << CPHA);
@@ -93,8 +89,7 @@ void SetupHardware(void) {
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs, and
  *  configures the sample update and PWM timers.
  */
-void EVENT_USB_Device_Connect(void)
-{
+void EVENT_USB_Device_Connect(void) {
 	/* Indicate USB enumerating */
 	//LEDs_SetAllLEDs(LEDMASK_USB_ENUMERATING);
 
@@ -108,8 +103,7 @@ void EVENT_USB_Device_Connect(void)
 /** Event handler for the USB_Disconnect event. This indicates that the device is no longer connected to a host via
  *  the status LEDs, disables the sample update and PWM output timers and stops the USB and Audio management tasks.
  */
-void EVENT_USB_Device_Disconnect(void)
-{
+void EVENT_USB_Device_Disconnect(void) {
 	/* Stop the sample reload timer */
 	TCCR0B = 0;
 
@@ -123,8 +117,7 @@ void EVENT_USB_Device_Disconnect(void)
 /** Event handler for the USB_ConfigurationChanged event. This is fired when the host set the current configuration
  *  of the USB device after enumeration - the device endpoints are configured.
  */
-void EVENT_USB_Device_ConfigurationChanged(void)
-{
+void EVENT_USB_Device_ConfigurationChanged(void) {
 	bool ConfigSuccess = true;
 
 	/* Setup Audio Stream Endpoint */
@@ -217,7 +210,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 	}
 }
 
-/** ISR to handle the reloading of the data endpoint with the next sample. */
+// ISR to handle the reloading of the data endpoint with the next sample.
 ISR(TIMER0_COMPA_vect, ISR_BLOCK) {
 	uint8_t PrevEndpoint = Endpoint_GetCurrentEndpoint();
 
@@ -246,44 +239,6 @@ ISR(TIMER0_COMPA_vect, ISR_BLOCK) {
 	Endpoint_SelectEndpoint(PrevEndpoint);
 }
 
-/* This function will power up ADC */
-void ADS1299_PWR_UP(void) {
-
-    /* Pull power down and reset pins low */
-    PORTB &= ~(1 << pin_PWR_DWN);
-    PORTB &= ~(1 << pin_RST);
-
-    /* Wait for 2^10 = 1024 SCK cycles */
-    _delay_us(1024);
-
-    /* Pull power down and reset pins high */
-    PORTB |= (1 << pin_PWR_DWN);
-    PORTB |= (1 << pin_RST);
-
-    /* Wait for 2^20 = 1048576 SCK cycles */
-    _delay_ms(1049);
-}
-
-/* This function implements delay in milliseconds using SCK cycles */
-void _delay_ms(uint16_t ms) {
-    /* Calculate number of SCK cycles for delay
-     * Each ms needs 1000 SCK cycles at 1MHz clock
-     * So multiply ms by 1000 to get total cycles needed */
-    uint32_t cycles = (uint32_t)ms * 1000;
-    
-    /* Count down cycles */
-    while(cycles--) {
-        /* One NOP instruction takes 1 clock cycle */
-        asm volatile("nop");
-    }
-}
-
-/* uint16_t SPI_RDATAC(void) {	
-	pin_SS = 0; // Set SS pin low
-	SPDR = 0b00010000;
-	while(!(SPSR & (1<<SPIF)));
-} */
-
 // Use this to receive more than one byte
 uint8_t SPI_ReceiveByte(void) {
 	SPDR = 0;
@@ -292,24 +247,24 @@ uint8_t SPI_ReceiveByte(void) {
 	return rcv;
 }
 
-// This function will set SS pin High or Low (following boolean input)
-void SET_SPI_SS(bool input) {
-	pin_SS = (uint8_t) input;
+// This function will set the SS pin HIGH or LOW (Following boolean input)
+static inline void SET_SPI_SS(const bool input) {
+	input ? (port_SPI |= (1 << pin_SS)) : (port_SPI &= ~(1 << pin_SS));
 }
 
-// This function will set PWR_DWN pin High or Low (following boolean input)
-void SET_PWR_DWN(bool input) {
-	pin_PWR_DWN = (uint8_t) input;
+// This function will set the PWR_DWN pin HIGH or LOW (following boolean input)
+static inline void SET_PWR_DWN(const bool input) {
+	input ? (PORTB |= (1 << pin_PWR_DWN)) : (PORTB &= ~(1 << pin_PWR_DWN));
 }
 
-// This function will set RST pin High or Low (following boolean input)
-void SET_RST(bool input) {
-	pin_RST = (uint8_t) input;
+// This function will set RST pin HIGHs or LOW (following boolean input)
+static inline void SET_RST(const bool input) {
+	input ? (PORTB |= (1 << pin_CLK_SEL)) : (PORTB &= ~(1 << pin_CLK_SEL));
 }
 
-// This function sets the CLK SEL pin
-void SET_CLK_SEL(bool input) {
-	pin_CLK_SEL = (uint8_t) pin_CLK_SEL;
+// This function sets the CLK SEL pin HIGH or LOW
+static inline void SET_CLK_SEL(const bool input) {
+    input ? (PORTD |= (1 << pin_CLK_SEL)) : (PORTD &= ~(1 << pin_CLK_SEL));
 }
 
 // Send a single byte via SPI and wait for transmission to complete. If cont = true, wont mess with SS pin at all
@@ -357,7 +312,7 @@ void ADS1299_RREG(uint8_t regAdd, uint8_t* buffer, uint8_t numRegs) {
     SET_SPI_SS(false); // Set SS low
     
     // Send first byte: 001r rrrr where rrrrr is register address
-    SPI_SendByte(0x20 | (regAdd & 0x1F), true); 
+    SPI_SendByte(0x20 | (regAdd & 0x1F), true); // Continous mode to not affect SS pin throughout CMD
     
     // Send second byte: 000n nnnn where nnnnn is number of registers - 1
     SPI_SendByte(numRegs - 1, true);
@@ -375,50 +330,73 @@ void ADS1299_RREG(uint8_t regAdd, uint8_t* buffer, uint8_t numRegs) {
 
 // This function is to send the SDATAC cmd to ADS1299
 void ADS1299_SDATAC(void) {
-	SPI_SendByte(CMD_ADC_SDATAC);
+	SPI_SendByte(CMD_ADC_SDATAC, false);
 	_ADS1299_MODE = ADS1299_MODE_SDATAC;
 }
 
 // This function is to send RDATAC cmd to ADS1299
 void ADS1299_RDATAC(void) {
-	SPI_SendByte(CMD_ADC_RDATAC);
+	SPI_SendByte(CMD_ADC_RDATAC, false);
 	_ADS1299_MODE = ADS1299_MODE_RDATAC;
 }
 
 // This function handles LED debugging based on device mode
 bool lightUp(uint8_t num, uint8_t GPIO_pin, uint16_t time) {
-	uint16_t timer = time / num;
+	uint32_t cycles = F_CPU * time / num; // Convert time into cycles, divide by number of times to blink in a second
 	for (int i = 0; i < num; i++) {
-		GPIO_pin = 1;
-		//delay()
+		port_LED |= (1 << PORTB6);
+		delay_sck_cycles(cycles);
+		port_LED &= ~(1 << PORTB6);
 		GPIO_pin = 0;
-		//delay()
+		delay_sck_cycles(cycles);
 	}
 
 	return true;
 }
 
-/* 
-	This function is to setup the ADS1299
-*/
-void ADS1299_SETUP(void) {
-	SET_CLK_SEL(true);
-	wait();
-	SET_PWR_DWN(false);
-	SET_RST(false);
-	wait();
-	SET_PWR_DWN(true);
-	SET_RST(true);
-	wait10x();
-	ADS1299_SDATAC();
-	uint8_t refbuf[1] = [0b11100000];
-	ADS1299_WREG(0x3h, &refbuf, 1);
-	wait();
+// This function handles delays with ISR
+// Used mainly for data processing, not LED debugging
+void delay_sck_cycles(uint32_t sck_cycles) {
+	uint32_t timer_ticks = sck_cycles * 4;
+	TCCR1A = 0;
+	TCCR1B = (1 << CS10);
+
+	TCNT1 = 0;
+	while (TCNT1 < timer_ticks) {
+		if (TCNT1 > 65000 && timer_ticks > 65000) { // Overflow handling
+			timer_ticks -= 65000;
+			TCNT1 = 0;
+		}
+	}
+
+	TCCR1B = 0;
 }
 
-/* Configure SPI: Master mode, MSB first, SCK freq = fosc/4 = 4MHz */
-SPCR = (1<<SPE)|(1<<MSTR);    // Enable SPI, Master mode
-SPSR = (1<<SPI2X);            // Double SPI speed for 4MHz
+// This function sets up the ADS1299
+void ADS1299_SETUP(void) {
+	SET_CLK_SEL(true);
+	delay_sck_cycles(2^20);
+	SET_PWR_DWN(false);
+	SET_RST(false);
+	delay_sck_cycles(2^20);
+	SET_PWR_DWN(true);
+	SET_RST(true);
+	delay_sck_cycles(2^20);
+	ADS1299_SDATAC();
+	uint8_t refbuf[] = {0b11100000};
+	ADS1299_WREG(0x3, refbuf, 1);
+	delay_sck_cycles(2^20);
 
-/* Set SS low to begin transmission */
-PORTB &= ~(1<<pin_SS);
+	uint8_t i = 0;
+	while (i < 20) {
+		struct Nutz temp;
+		temp = ADS1299_REGISTER_LS[i];
+		if (temp.add == -2) {
+			i++;
+			continue;
+		}
+		uint8_t addy[] = {(uint8_t)temp.reg_val};
+		ADS1299_WREG(temp.add, addy, 1);
+		i++;
+	}
+}

@@ -49,7 +49,7 @@
 
 		#include <avr/pgmspace.h>
 
-		#include "Config/AppConfig.h"
+		#include "Config/LUFAConfig.h"
 
 	/* Macros: */
 		/** Endpoint address of the Audio isochronous streaming data IN endpoint. */
@@ -63,8 +63,7 @@
 		 *  application code, as the configuration descriptor contains several sub-descriptors which
 		 *  vary between devices, and which describe the device's usage to the host.
 		 */
-		typedef struct
-		{
+		typedef struct {
 			USB_Descriptor_Configuration_Header_t     Config;
 
 			// Audio Control Interface
@@ -87,8 +86,7 @@
 		 *  should have a unique ID index associated with it, which can be used to refer to the
 		 *  interface from other descriptors.
 		 */
-		enum InterfaceDescriptors_t
-		{
+		enum InterfaceDescriptors_t {
 			INTERFACE_ID_AudioControl = 0, /**< Audio control interface descriptor ID */
 			INTERFACE_ID_AudioStream  = 1, /**< Audio stream interface descriptor ID */
 		};

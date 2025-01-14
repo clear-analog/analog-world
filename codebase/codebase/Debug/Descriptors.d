@@ -117,18 +117,7 @@ Descriptors.d Descriptors.o: .././Descriptors.c .././Descriptors.h \
  ../../lufa/LUFA/Drivers/USB/Class/Device/../Common/RNDISClassCommon.h \
  ../../lufa/LUFA/Drivers/USB/Class/Device/../Common/CDCClassCommon.h \
  ../../lufa/LUFA/Drivers/USB/Class/StillImageClass.h \
- .././Config/AppConfig.h \
- c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\wdt.h \
- c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\power.h \
- .././Config/../Descriptors.h ../../lufa/LUFA/Drivers/Board/LEDs.h \
- ../../lufa/LUFA/Drivers/Board/../../Common/Common.h \
- ../../lufa/LUFA/Drivers/Board/Buttons.h \
- ../../lufa/LUFA/Drivers/Peripheral/ADC.h \
- ../../lufa/LUFA/Drivers/Peripheral/../../Common/Common.h \
- ../../lufa/LUFA/Drivers/Peripheral/AVR8/ADC_AVR8.h \
- ../../lufa/LUFA/Drivers/Peripheral/AVR8/../../../Common/Common.h \
- ../../lufa/LUFA/Platform/Platform.h \
- ../../lufa/LUFA/Platform/../Common/Common.h .././Config/LUFAConfig.h
+ .././Config/LUFAConfig.h
 
 .././Descriptors.h:
 
@@ -367,31 +356,5 @@ c:\users\suraj\cs\analogworld\analog-world\codebase\lufa\lufa\common\common.h:
 ../../lufa/LUFA/Drivers/USB/Class/Device/../Common/CDCClassCommon.h:
 
 ../../lufa/LUFA/Drivers/USB/Class/StillImageClass.h:
-
-.././Config/AppConfig.h:
-
-c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\wdt.h:
-
-c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\power.h:
-
-.././Config/../Descriptors.h:
-
-../../lufa/LUFA/Drivers/Board/LEDs.h:
-
-../../lufa/LUFA/Drivers/Board/../../Common/Common.h:
-
-../../lufa/LUFA/Drivers/Board/Buttons.h:
-
-../../lufa/LUFA/Drivers/Peripheral/ADC.h:
-
-../../lufa/LUFA/Drivers/Peripheral/../../Common/Common.h:
-
-../../lufa/LUFA/Drivers/Peripheral/AVR8/ADC_AVR8.h:
-
-../../lufa/LUFA/Drivers/Peripheral/AVR8/../../../Common/Common.h:
-
-../../lufa/LUFA/Platform/Platform.h:
-
-../../lufa/LUFA/Platform/../Common/Common.h:
 
 .././Config/LUFAConfig.h:
