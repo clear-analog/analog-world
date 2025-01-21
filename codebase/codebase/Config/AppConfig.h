@@ -42,6 +42,7 @@
 
 #ifndef _APP_CONFIG_H_
 #define _APP_CONFIG_H_
+	
 	// Deez Includes
 	#include <avr/io.h>
 	#include <avr/wdt.h>
@@ -53,6 +54,7 @@
 	#include <LUFA/Drivers/Board/LEDs.h>
 	#include <LUFA/Drivers/Board/Buttons.h>
 	#include <LUFA/Drivers/Peripheral/ADC.h>
+	#include <LUFA/Common/Common.h>
 
 	/* Definitions */
 	#define pin_SS 				PORTB7
@@ -82,6 +84,7 @@
 	} regVal_pair;
 
 	#define size_reg_ls 22
+	
 	// Registers to setup. If -2, end WREG.
 	static const regVal_pair ADS1299_REGISTER_LS[22] = {
 		{0x01, 0b10110000},
@@ -116,7 +119,8 @@
 	void EVENT_USB_Device_ConfigurationChanged(void);
 	void EVENT_USB_Device_ControlRequest(void);
 	void SetupHardware(void); // This function configures {ATMEGA: SPI & USB}, {ADC: SPI and Registers}
-
+	
+	/* ADC Functionality */
 	uint8_t _ADS1299_MODE;			// Variable of current ADS1299 mode
 	#define ADS1299_MODE_SDATAC 0 	// ADS1299 post SDATAC cmd
 	#define ADS1299_MODE_RDATAC 1	// ADS1299 post RDATAC cmd
@@ -131,6 +135,7 @@
 	// SPI Core Functions
 	void SPI_SendByte(uint8_t byte, bool cont);
 	void delay_sck_cycles(uint32_t);
+	void SCK_ctrl(bool);
 	uint32_t time2sck(float time); // Conversion function with time in milliseconds
 	static inline void SET_CLK_SEL(const bool input) __attribute__((always_inline));
 	static inline void SET_PWR_DWN(const bool input) __attribute__((always_inline));

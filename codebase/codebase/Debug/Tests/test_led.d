@@ -129,7 +129,8 @@ Tests/test_led.d Tests/test_led.o: ../Tests/test_led.c \
  ../../lufa/LUFA/Drivers/Peripheral/ADC.h \
  ../../lufa/LUFA/Drivers/Peripheral/../../Common/Common.h \
  ../../lufa/LUFA/Drivers/Peripheral/AVR8/ADC_AVR8.h \
- ../../lufa/LUFA/Drivers/Peripheral/AVR8/../../../Common/Common.h
+ ../../lufa/LUFA/Drivers/Peripheral/AVR8/../../../Common/Common.h \
+ ../../lufa/LUFA/Common/Common.h
 
 ../Tests/../Config/AppConfig.h:
 
@@ -394,3 +395,5 @@ c:\users\suraj\cs\analogworld\analog-world\codebase\lufa\lufa\common\common.h:
 ../../lufa/LUFA/Drivers/Peripheral/AVR8/ADC_AVR8.h:
 
 ../../lufa/LUFA/Drivers/Peripheral/AVR8/../../../Common/Common.h:
+
+../../lufa/LUFA/Common/Common.h:

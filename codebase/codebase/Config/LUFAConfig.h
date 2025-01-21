@@ -87,15 +87,14 @@
 
 		#define SCHLONG_VID 0x04D8
 		#define SCHLONG_PID 0xE52D
-    uint8_t ADSC;
-    uint8_t ADMUX;
-    uint8_t ADIF;
-    uint8_t ADEN;
-    uint8_t ADCSRA;
-    uint8_t ADC;
+		uint8_t ADSC;
+		uint8_t ADMUX;
+		uint8_t ADIF;
+		uint8_t ADEN;
+		uint8_t ADCSRA;
+		uint8_t ADC;
 
 	#else
-
 		#error Unsupported architecture for this LUFA configuration file.
 
 	#endif

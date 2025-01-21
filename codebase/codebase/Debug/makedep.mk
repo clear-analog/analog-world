@@ -4,6 +4,10 @@
 
 Descriptors.c
 
+lufa_files\CCIDClassDevice.c
+
+lufa_files\CDCClassDevice.c
+
 lufa_files\ConfigDescriptors.c
 
 lufa_files\DeviceStandardReq.c

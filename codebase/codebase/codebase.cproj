@@ -20,10 +20,10 @@
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
-    <RamSnippetAddress />
+    <RamSnippetAddress>0x20000000</RamSnippetAddress>
     <UncachedRange />
     <preserveEEPROM>true</preserveEEPROM>
-    <OverrideVtorValue />
+    <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
     <ResetRule>0</ResetRule>
     <eraseonlaunchrule>0</eraseonlaunchrule>
@@ -95,7 +95,7 @@
             <Value>DEBUG</Value>
             <Value>F_CPU=16000000UL</Value>
             <Value>F_USB=16000000UL</Value>
-            <Value>ARCH=AVR8</Value>
+            <Value>ARCH=ARCH_AVR8</Value>
             <Value>USE_LUFA_CONFIG_HEADER</Value>
             <Value>MCU=atmega16u2</Value>
           </ListValues>
@@ -150,6 +150,18 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Descriptors.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lufa_files\CCIDClassDevice.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lufa_files\CCIDClassDevice.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lufa_files\CDCClassDevice.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lufa_files\CDCClassDevice.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="lufa_files\ConfigDescriptors.c">

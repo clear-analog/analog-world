@@ -53,10 +53,17 @@
 
 	/* Macros: */
 		/** Endpoint address of the Audio isochronous streaming data IN endpoint. */
-		#define AUDIO_STREAM_EPADDR          (ENDPOINT_DIR_IN | 1)
+		#define AUDIO_STREAM_EPADDR         (ENDPOINT_DIR_IN | 1)
 
 		/** Endpoint size in bytes of the Audio isochronous streaming data endpoint. */
-		#define AUDIO_STREAM_EPSIZE           256
+		#define AUDIO_STREAM_EPSIZE         256
+
+		/** Virtual Serial Port Macros */
+		#define CDC_TX_EPADDR				(ENDPOINT_DIR_IN | 2)
+		#define CDC_RX_EPADDR				(ENDPOINT_DIR_OUT | 3)
+		#define CDC_NOTIFICATION_EPADDR 	(ENDPOINT_DIR_IN | 3)
+		#define CDC_NOTIFICATION_EPSIZE 	8
+		#define CDC_TXRX_EPSIZE				16
 
 	/* Type Defines: */
 		/** Type define for the device configuration descriptor structure. This must be defined in the
@@ -80,6 +87,19 @@
 			USB_Audio_SampleFreq_t                    Audio_AudioFormatSampleRates[5];
 			USB_Audio_Descriptor_StreamEndpoint_Std_t Audio_StreamEndpoint;
 			USB_Audio_Descriptor_StreamEndpoint_Spc_t Audio_StreamEndpoint_SPC;
+
+			// Serial Monitor CDC Control Interface
+			USB_Descriptor_Interface_Association_t    CDC_IAD;
+			USB_Descriptor_Interface_t                CDC_CCI_Interface;
+			USB_CDC_Descriptor_FunctionalHeader_t     CDC_Functional_Header;
+			USB_CDC_Descriptor_FunctionalACM_t        CDC_Functional_ACM;
+			USB_CDC_Descriptor_FunctionalUnion_t      CDC_Functional_Union;
+			USB_Descriptor_Endpoint_t                 CDC_ManagementEndpoint;
+
+			// Serial Monitor CDC Data Interface
+			USB_Descriptor_Interface_t                CDC_DCI_Interface;
+			USB_Descriptor_Endpoint_t                 CDC_DataOutEndpoint;
+			USB_Descriptor_Endpoint_t                 CDC_DataInEndpoint;
 		} USB_Descriptor_Configuration_t;
 
 		/** Enum for the device interface descriptor IDs within the device. Each interface descriptor
@@ -89,6 +109,8 @@
 		enum InterfaceDescriptors_t {
 			INTERFACE_ID_AudioControl = 0, /**< Audio control interface descriptor ID */
 			INTERFACE_ID_AudioStream  = 1, /**< Audio stream interface descriptor ID */
+			INTERFACE_ID_SerMon_Ctrl  = 2, /**< Serial monitor control interface descriptor ID */
+			INTERFACE_ID_SerMon_Strm  = 3  /**< Serial monitor data interface descriptor ID */
 		};
 
 		/** Enum for the device string descriptor IDs within the device. Each string descriptor should
