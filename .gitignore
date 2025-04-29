@@ -5,3 +5,10 @@
 *.srec
 *.o
 *.atsuo
+codebase/.vs/codebase/v14/.atsuo
+codebase/codebase/Debug/codebase.elf
+codebase/codebase/Debug/codebase.hex
+codebase/codebase/Debug/codebase.lss
+codebase/codebase/Debug/codebase.map
+codebase/codebase/Debug/codebase.srec
+codebase/codebase/Debug/main.o
