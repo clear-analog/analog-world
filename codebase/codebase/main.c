@@ -39,6 +39,9 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+int main2(void);
+void SetupHardware2(void);
+void SPI_procedure(void);
 
 /** Flag to indicate if the streaming audio alternative interface has been selected by the host. */
 static bool StreamingAudioInterfaceSelected = false;
@@ -46,15 +49,61 @@ static bool StreamingAudioInterfaceSelected = false;
 /** Current audio sampling frequency of the streaming audio endpoint. */
 static uint32_t CurrentAudioSampleFrequency = 48000;
 
+int main(void) {
+	SetupHardware();
+	GlobalInterruptEnable();
+
+
+	while (1) {
+		//USB_USBTask();
+		port_GPIO |= (1 << pin_LED_DEBUG);
+		//delay_sck_cycles(1LL<17);
+		port_GPIO &= ~(1 << pin_LED_DEBUG);
+		//port_GPIO ^= (1 << pin_LED_DEBUG);
+		//delay_sck_cycles(1LL<17);
+	}
+
+	return 0;
+}
+
+void SetupHardware(void) {
+	#if (ARCH==ARCH_AVR8)
+		MCUSR &= ~(1 << WDRF);
+		wdt_disable();
+		clock_prescale_set(clock_div_1); // Disable clock division
+	#endif
+
+	// Peripheral Initialization
+	USB_Init();
+	DDRD |= (1 << pin_LED_DEBUG); // debug LED setup as output pin
+
+	// SPI setup, being done at slow speed here on purpose with delays
+	ddr_SPI |= (1 << pin_MOSI) | (1 << pin_SCK) | (1 << pin_SS);
+	ddr_SPI &= ~(1 << pin_MISO);
+	timer_init_for_sck(); // Exactly what it does
+	_ADS1299_MODE = ADS1299_MODE_WAKEUP;
+	port_SPI &= ~(1 << pin_SCK); // keep clock low rather than undefined
+	ADS1299_SETUP();
+}
+
+/* Lil SPI test son */
+
+void SPI_procedure(void) {
+	delay_sck_cycles(1LL<<15);
+	SET_SPI_SS(false);
+	lightUp(10, pin_LED_DEBUG, 5000);
+	SET_SPI_SS(true);
+
+}
+
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
-int main(void) {
+int main2(void) {
 	SetupHardware();
 
 	//LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
-
 /*	#ifdef TEST_ALL
 		#define TEST_LED
 		#define TEST_SPI
@@ -112,7 +161,7 @@ int main(void) {
 }
 
 /** Configures the board hardware and chip peripherals . */
-void SetupHardware(void) {
+void SetupHardware2(void) {
 	#if (ARCH == ARCH_AVR8)
 		/* Disable watchdog if enabled by bootloader/fuses */
 		MCUSR &= ~(1 << WDRF);
@@ -137,7 +186,7 @@ void SetupHardware(void) {
 	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00); // Set frame format: 8 data, 1 stop bit
 	UBRR0 = F_CPU / 16 / 9600 - 1;          // Set baud rate to 9600*/
 
-
+	// We will do the SPI set 
 	_ADS1299_MODE = ADS1299_MODE_WAKEUP;
 	SET_SPI_SS(false);
 	port_SPI &= ~(1 << pin_SCK);
@@ -380,7 +429,7 @@ uint8_t SPI_SendByte(uint8_t byte, bool cont) {
 				port_SPI &= ~(1 << pin_MOSI);
 			}
 
-			delay_sck_cycles(time2sck(0.125));
+			delay_sck_cycles(time2sck(0.125)); // put in the number directly to save on clock cycles
 
 			// Clock high
 			port_SPI |= (1 << pin_SCK);
@@ -411,7 +460,7 @@ void timer_init_for_sck(void) {
 	ddr_SPI |= (1 << pin_SCK);
 }
 
-uint8_t betterSPI_SendByte(uint8_t data, bool cont) {
+uint8_t betternotbestSPI_SendByte(uint8_t data, bool cont) {
 	uint8_t rcvd = 0;
 	
 	if (!cont) {
@@ -568,23 +617,23 @@ void delay_sck_cycles(uint32_t sck_cycles) {
 // This function sets up the ADS1299
 void ADS1299_SETUP(void) {
 	SET_CLK_SEL(true);
-	long long int a = 1;
-	delay_sck_cycles(a<<20);  // Changed 2^20 to 1 << 20 for proper bit shifting
+
+	delay_sck_cycles(1LL<<20);  // Changed 2^20 to 1 << 20 for proper bit shifting
 	SET_PWR_DWN(false);
 	SET_RST(false);
-	delay_sck_cycles(a<<20);
+	delay_sck_cycles(1LL<<20);
 	SET_PWR_DWN(true);
 	SET_RST(true);
-	delay_sck_cycles(a<<20);
+	delay_sck_cycles(1LL<<20);
 	ADS1299_SDATAC();
 	uint8_t refbuf[] = {0b11100000};
 	ADS1299_WREG(0x3, refbuf, 1);
-	delay_sck_cycles(a<<20);
+	delay_sck_cycles(1LL<<20);
 
 	uint8_t i = 0;
 	while (i < size_reg_ls) {
-		const regVal_pair temp = ADS1299_REGISTER_LS[i];  // Initialize struct directly
-		if (temp.add == -2) {  // Use dot notation instead of arrow operator
+		const regVal_pair temp = ADS1299_REGISTER_LS[i]; // get pair from array
+		if (temp.add == -2) {
 			i++;
 			continue;
 		}
