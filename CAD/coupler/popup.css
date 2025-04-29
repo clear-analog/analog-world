@@ -1,0 +1,164 @@
+body {
+    font-family: sans-serif;
+    width: 400px; /* Adjust width as needed */
+    padding: 10px;
+    background-color: #f4f4f4;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+h2, h3 {
+    margin: 5px 0;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 3px;
+}
+
+h3 {
+    font-size: 1em;
+    border-bottom: none;
+    margin-bottom: 3px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+    max-height: 150px; /* Limit list height */
+    overflow-y: auto; /* Add scrollbar if needed */
+    border: 1px solid #ddd;
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 2px;
+    border-bottom: 1px dotted #eee;
+    font-size: 0.9em;
+}
+
+li:last-child {
+    border-bottom: none;
+}
+
+li span {
+    flex-grow: 1;
+    margin-right: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: default; /* Indicate hover for title */
+}
+
+li i {
+    color: #888;
+    font-style: italic;
+    width: 100%;
+    text-align: center;
+}
+
+
+button {
+    padding: 4px 8px;
+    margin-left: 3px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background-color: #eee;
+    font-size: 0.8em;
+}
+
+button:hover {
+    background-color: #ddd;
+}
+
+.category-btn {
+    background-color: #e0e8f0;
+}
+.category-btn:hover {
+    background-color: #c8d4e0;
+}
+
+
+.clear-item-btn {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    font-weight: bold;
+    padding: 2px 5px;
+}
+
+.clear-item-btn:hover {
+    background-color: #f1b0b7;
+}
+
+
+.clear-all-btn {
+     display: block; /* Make button take full width */
+     width: calc(100% - 10px); /* Adjust for padding */
+     margin: 5px auto;
+     background-color: #ffeeba;
+     border-color: #ffdf7e;
+}
+.clear-all-btn:hover {
+    background-color: #ffda6a;
+}
+
+/* Style for the Clear All Categorized button specifically */
+#clearAllCategorized {
+    background-color: #f5c6cb;
+    border-color: #efa2a9;
+}
+#clearAllCategorized:hover {
+     background-color: #ec8a93;
+}
+
+
+.settings, .actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.settings label {
+    font-weight: bold;
+}
+
+#folderName {
+    flex-grow: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.action-btn {
+    padding: 8px 15px;
+    font-size: 0.9em;
+    font-weight: bold;
+    flex-grow: 1; /* Make buttons share space */
+}
+
+#downloadAll {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+#downloadAll:hover {
+    background-color: #b1dfbb;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 15px 0;
+}

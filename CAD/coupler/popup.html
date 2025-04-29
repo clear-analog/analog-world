@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Link Holder</title>
+    <link rel="stylesheet" href="popup.css">
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div class="container">
+        <!-- Renamed Section -->
+        <h2>Links to Categorize</h2>
+        <ul id="pendingList">
+            <!-- Links sent via right-click will appear here -->
+        </ul>
+        <button id="clearPending" class="clear-all-btn">Clear All Pending</button>
+        <hr>
+
+        <h2>Categorized Links</h2>
+
+        <div class="category">
+            <h3>Model Links</h3>
+            <ul id="modelList" class="link-list"></ul>
+            <button id="clearModel" class="clear-all-btn">Clear All Models</button>
+        </div>
+
+        <div class="category">
+            <h3>Footprint Links</h3>
+            <ul id="footprintList" class="link-list"></ul>
+            <button id="clearFootprint" class="clear-all-btn">Clear All Footprints</button>
+        </div>
+
+        <div class="category">
+            <h3>Symbol Links</h3>
+            <ul id="symbolList" class="link-list"></ul>
+            <button id="clearSymbol" class="clear-all-btn">Clear All Symbols</button>
+        </div>
+
+        <hr>
+
+        <h2>Settings & Actions</h2>
+        <div class="settings">
+             <label for="folderName">Download Folder Name:</label>
+             <input type="text" id="folderName" value="__SimonShark1__">
+        </div>
+
+        <div class="actions">
+            <button id="downloadAll" class="action-btn">Download All Categorized</button>
+            <button id="clearAllCategorized" class="action-btn clear-all-btn">Clear ALL Categorized</button> <!-- Renamed ID -->
+        </div>
+
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
