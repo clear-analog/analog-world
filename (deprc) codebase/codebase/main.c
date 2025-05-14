@@ -36,12 +36,6 @@
 
 #include "Config/AppConfig.h"
 #include <stdlib.h>
-#include <avr/io.h>
-#include <util/delay.h>
-#include <avr/interrupt.h>
-int main2(void);
-void SetupHardware2(void);
-void SPI_procedure(void);
 
 /** Flag to indicate if the streaming audio alternative interface has been selected by the host. */
 static bool StreamingAudioInterfaceSelected = false;
@@ -49,62 +43,16 @@ static bool StreamingAudioInterfaceSelected = false;
 /** Current audio sampling frequency of the streaming audio endpoint. */
 static uint32_t CurrentAudioSampleFrequency = 48000;
 
-int main(void) {
-	SetupHardware();
-	GlobalInterruptEnable();
-
-
-	while (1) {
-		//USB_USBTask();
-		port_GPIO |= (1 << pin_LED_DEBUG);
-		//delay_sck_cycles(1LL<17);
-		port_GPIO &= ~(1 << pin_LED_DEBUG);
-		//port_GPIO ^= (1 << pin_LED_DEBUG);
-		//delay_sck_cycles(1LL<17);
-	}
-
-	return 0;
-}
-
-void SetupHardware(void) {
-	#if (ARCH==ARCH_AVR8)
-		MCUSR &= ~(1 << WDRF);
-		wdt_disable();
-		clock_prescale_set(clock_div_1); // Disable clock division
-	#endif
-
-	// Peripheral Initialization
-	USB_Init();
-	DDRD |= (1 << pin_LED_DEBUG); // debug LED setup as output pin
-
-	// SPI setup, being done at slow speed here on purpose with delays
-	ddr_SPI |= (1 << pin_MOSI) | (1 << pin_SCK) | (1 << pin_SS);
-	ddr_SPI &= ~(1 << pin_MISO);
-	timer_init_for_sck(); // Exactly what it does
-	_ADS1299_MODE = ADS1299_MODE_WAKEUP;
-	port_SPI &= ~(1 << pin_SCK); // keep clock low rather than undefined
-	ADS1299_SETUP();
-}
-
-/* Lil SPI test son */
-
-void SPI_procedure(void) {
-	delay_sck_cycles(1LL<<15);
-	SET_SPI_SS(false);
-	lightUp(10, pin_LED_DEBUG, 5000);
-	SET_SPI_SS(true);
-
-}
-
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
-int main2(void) {
+int main(void) {
 	SetupHardware();
 
 	//LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
-/*	#ifdef TEST_ALL
+/*
+	#ifdef TEST_ALL
 		#define TEST_LED
 		#define TEST_SPI
 		#define TEST_ADC
@@ -131,37 +79,35 @@ int main2(void) {
 		test_usb();
 	#endif*/
 
-	DDRD |=  (1 << pin_LED_DEBUG);
+	DDRD |= (1 << pin_LED_DEBUG);
 	//port_GPIO |= (1 << pin_LED_DEBUG);
+	//lightUp(5, pin_LED_DEBUG, 2.0);
+	//delay_sck_cycles(2^18);
+	//lightUp(10, pin_LED_DEBUG, 2.0);
+	port_GPIO |= (1 << pin_LED_DEBUG);
 
-	// just blink please
-	for (;;) {
-		port_GPIO |= (1 << pin_LED_DEBUG);
-		for (uint32_t i = 0; i < (1ULL << 20); i++);
-		//delay_sck_cycles(1 << 20);
-		port_GPIO &= ~(1 << pin_LED_DEBUG);
-		for (uint32_t i = 0; i < (1ULL << 20); i++);
-		//delay_sck_cycles(1 << 20);
-	}
-
-	long int delay_t = 1L << 20;
+	int count = 2;
 	uint8_t buffon[1];
+	
+	while (true) {
+		port_GPIO |= (1 << pin_LED_DEBUG);
+		port_GPIO &= ~(1 << pin_LED_DEBUG);
+	}
 
 	for (;;) {
 		USB_USBTask();
-		//delay_sck_cycles(1 << 23);
+		//delay_sck_cycles(2^23);
+		if (count < 3) {
+			ADS1299_RREG(0x0B, buffon, 1);
+			lightUp(buffon[0], pin_LED_DEBUG, 2.0);
+		}
 
-		ADS1299_RREG(0x0B, buffon, 1);
-		//lightUp(buffon[0], pin_LED_DEBUG, 2.0);
-		port_GPIO |= (1 << pin_LED_DEBUG);
-		delay_sck_cycles(delay_t);
-		port_GPIO &= ~(1 << pin_LED_DEBUG);
-		delay_sck_cycles(delay_t);
+		count++;
 	}
 }
 
 /** Configures the board hardware and chip peripherals . */
-void SetupHardware2(void) {
+void SetupHardware(void) {
 	#if (ARCH == ARCH_AVR8)
 		/* Disable watchdog if enabled by bootloader/fuses */
 		MCUSR &= ~(1 << WDRF);
@@ -180,29 +126,13 @@ void SetupHardware2(void) {
 
 	/* Start the ADC conversion in free running mode */
 	//ADC_StartReading(ADC_REFERENCE_AVCC | ADC_RIGHT_ADJUSTED | ADC_GET_CHANNEL_MASK(MIC_IN_ADC_CHANNEL));
-
-	/* Setup USART 
-	UCSR0B = (1 << TXEN0) | (1 << RXEN0);   // Enable USART transmitter and receiver
-	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00); // Set frame format: 8 data, 1 stop bit
-	UBRR0 = F_CPU / 16 / 9600 - 1;          // Set baud rate to 9600*/
-
-	// We will do the SPI set 
 	_ADS1299_MODE = ADS1299_MODE_WAKEUP;
-	SET_SPI_SS(false);
-	port_SPI &= ~(1 << pin_SCK);
-	
 	// SPI Configuration (ddr_SPI = DDRB)
 	ddr_SPI |= (1 << pin_MOSI) | (1 << pin_SCK) | (1 << pin_SS); //MOSI, SCK, SS are outputs
 	ddr_SPI &= ~(1 << pin_MISO);
 
 	// Setting Clock rate to fck/16 and enabling SPI as master.
-	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPI2X) | (1 << SPR1) | (0 << SPR0) | (0 << CPOL) | (0 << CPHA);
-
-	lightUp(10, pin_LED_DEBUG, 1.0);
-	delay_sck_cycles(2^18);
-	//lightUp(10, pin_LED_DEBUG, 2.0);
-	port_GPIO |= (1 << pin_LED_DEBUG);
-
+	SPCR = (1 << SPE) | (1 << MSTR) | (1<<SPI2X) | (1 << SPR0) | (0 << CPOL) | (0 << CPHA);
 	ADS1299_SETUP();
 	
 	delay_sck_cycles(2^15);
@@ -370,7 +300,7 @@ uint8_t SPI_ReceiveByte(void) {
 }
 
 // Send a single byte via SPI and wait for transmission to complete. If cont = true, wont mess with SS pin at all
-void oldSPI_SendByte(uint8_t byte, bool cont) {
+void SPI_SendByte(uint8_t byte, bool cont) {
 	if (!cont) {
 		SET_SPI_SS(false);
 		SPDR = byte;                      // Start transmission by writing to SPDR
@@ -382,132 +312,6 @@ void oldSPI_SendByte(uint8_t byte, bool cont) {
 		SPDR = byte;
 		while(!(SPSR & (1 << SPIF)));
 	}
-}
-
-uint8_t SPI_SendByte(uint8_t byte, bool cont) {
-	uint8_t rcvd = 0; //received byte
-
-	if (!cont) {
-		SET_SPI_SS(false);
-
-		for (uint8_t i = 0; i < 8; i++) {
-			if (byte & 0x80) {
-				port_SPI |= (1 << pin_MOSI);
-			}
-
-			else {
-				port_SPI &= ~(1 << pin_MOSI);
-			}
-
-			delay_sck_cycles(time2sck(0.125));
-
-			// Clock high
-			port_SPI |= (1 << pin_SCK);
-			delay_sck_cycles(time2sck(0.125));
-
-			// Read MISO
-			rcvd <<= 1;
-			if (pin_port_SPI & (1 << pin_MISO)) {
-				rcvd |= 1;
-			}
-
-			// Clock low
-			port_SPI &= ~(1 << pin_SCK);
-			byte <<= 1;
-		}
-
-		SET_SPI_SS(true);
-	}
-
-	else {
-		for (uint8_t i = 0; i < 8; i++) {
-			if (byte & 0x80) {
-				port_SPI |= (1 << pin_MOSI);
-			}
-
-			else {
-				port_SPI &= ~(1 << pin_MOSI);
-			}
-
-			delay_sck_cycles(time2sck(0.125)); // put in the number directly to save on clock cycles
-
-			// Clock high
-			port_SPI |= (1 << pin_SCK);
-			delay_sck_cycles(time2sck(0.125));
-
-			// Read MISO
-			rcvd <<= 1;
-			if (pin_port_SPI & (1 << pin_MISO)) {
-				rcvd |= 1;
-			}
-
-			// Clock low
-			port_SPI &= ~(1 << pin_SCK);
-			byte <<= 1;
-		}
-	}
-	
-	return rcvd;
-}
-
-// To be added to setup_hardware() function
-void timer_init_for_sck(void) {
-	// Set Timer1 to CTC
-	TCCR1A = (1 << COM1A0);
-	TCCR1B = (1 << WGM12) | (1 << CS10);
-	
-	OCR1A = 1;
-	ddr_SPI |= (1 << pin_SCK);
-}
-
-uint8_t betternotbestSPI_SendByte(uint8_t data, bool cont) {
-	uint8_t rcvd = 0;
-	
-	if (!cont) {
-		SET_SPI_SS(false);
-		
-		if (data & 0x80)
-			port_SPI |= (1 << pin_MOSI);
-		else
-			port_SPI &= ~(1 << pin_MOSI);
-			
-		// Clock is handled by timer on OC1A pin
-		// Wait for one clock cycle by monitoring pin state
-		while(!(pin_port_SPI & (1 << pin_SCK)));  // Wait for clock high
-			        
-		// Read MISO
-		rcvd <<= 1;
-		if (pin_port_SPI & (1 << pin_MISO))
-			rcvd |= 1;
-			        
-		while(pin_port_SPI & (1 << pin_SCK));     // Wait for clock low
-			        
-		data <<= 1;
-		
-		SET_SPI_SS(true);
-	}
-	
-	else {
-		if (data & 0x80)
-			port_SPI |= (1 << pin_MOSI);
-		else
-			port_SPI &= ~(1 << pin_MOSI);
-				
-		// Clock is handled by timer on OC1A pin
-		// Wait for one clock cycle by monitoring pin state
-		while(!(pin_port_SPI & (1 << pin_SCK)));  // Wait for clock high
-				
-		// Read MISO
-		rcvd <<= 1;
-		if (pin_port_SPI & (1 << pin_MISO))
-			rcvd |= 1;
-				
-		while(pin_port_SPI & (1 << pin_SCK));     // Wait for clock low
-				
-		data <<= 1;
-	}
-	
-	return rcvd;
 }
 
 // This function will write numReg registers starting at regAdd, obtaining necessary values from values byte array
@@ -575,9 +379,9 @@ bool lightUp(uint8_t num, uint8_t GPIO_pin, float time) {
 	uint32_t cycles = (uint32_t)(F_CPU * (time/1000) / num); // Convert time into cycles, divide by number of times to blink in a second
 	for (int i = 0; i < num; i++) {
 		port_GPIO |= (1 << GPIO_pin);
-		delay_sck_cycles(cycles/(2*num));
+		delay_sck_cycles(cycles/2);
 		port_GPIO &= ~(1 << GPIO_pin);
-		delay_sck_cycles(cycles/(2*num));
+		delay_sck_cycles(cycles/2);
 	}
 
 	return true;
@@ -617,7 +421,6 @@ void delay_sck_cycles(uint32_t sck_cycles) {
 // This function sets up the ADS1299
 void ADS1299_SETUP(void) {
 	SET_CLK_SEL(true);
-
 	delay_sck_cycles(1LL<<20);  // Changed 2^20 to 1 << 20 for proper bit shifting
 	SET_PWR_DWN(false);
 	SET_RST(false);
@@ -628,12 +431,12 @@ void ADS1299_SETUP(void) {
 	ADS1299_SDATAC();
 	uint8_t refbuf[] = {0b11100000};
 	ADS1299_WREG(0x3, refbuf, 1);
-	delay_sck_cycles(1LL<<20);
+	delay_sck_cycles(2LL<<20);
 
 	uint8_t i = 0;
 	while (i < size_reg_ls) {
-		const regVal_pair temp = ADS1299_REGISTER_LS[i]; // get pair from array
-		if (temp.add == -2) {
+		const regVal_pair temp = ADS1299_REGISTER_LS[i];  // Initialize struct directly
+		if (temp.add == -2) {  // Use dot notation instead of arrow operator
 			i++;
 			continue;
 		}

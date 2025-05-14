@@ -63,7 +63,6 @@
 	#define ddr_GPIO			DDRD
 	#define port_SPI 			PORTB
 	#define port_GPIO			PORTD
-	#define pin_port_SPI		PINB
 	#define pin_LED_DEBUG 		PORTD7
 	#define pin_CLK_SEL			PORTD4 // NOT NECESSARY
 	#define pin_PWR_DWN 		PORTD0
@@ -118,11 +117,11 @@
 	void EVENT_USB_Device_ControlRequest(void);
 	void SetupHardware(void); // This function configures {ATMEGA: SPI & USB}, {ADC: SPI and Registers}
 
-	uint8_t _ADS1299_MODE;				// Variable of current ADS1299 mode
-	#define ADS1299_MODE_SDATAC 0 		// ADS1299 post SDATAC cmd
-	#define ADS1299_MODE_RDATAC 1		// ADS1299 post RDATAC cmd
+	uint8_t _ADS1299_MODE;			// Variable of current ADS1299 mode
+	#define ADS1299_MODE_SDATAC 0 	// ADS1299 post SDATAC cmd
+	#define ADS1299_MODE_RDATAC 1	// ADS1299 post RDATAC cmd
 	#define ADS1299_MODE_RADIOSILENCE 2 // ADS1299 when SPI not working
-	#define ADS1299_MODE_WAKEUP 10		// Default ADS1299 mode during power up
+	#define ADS1299_MODE_WAKEUP 10	// Default ADS1299 mode during power up
 	void ADS1299_WREG(uint8_t, uint8_t*, uint8_t); 	// Encapsulations of ADS1299 commands
 	void ADS1299_RREG(uint8_t, uint8_t*, uint8_t);
 	void ADS1299_SETUP(void);
@@ -130,10 +129,7 @@
 	void ADS1299_RDATAC(void);
 
 	// SPI Core Functions
-	uint8_t SPI_SendByte(uint8_t byte, bool cont);
-	void oldSPI_SendByte(uint8_t byte, bool cont);
-	uint8_t betterSPI_SendByte(uint8_t data, bool cont);
-	void timer_init_for_sck(void);
+	void SPI_SendByte(uint8_t byte, bool cont);
 	void delay_sck_cycles(uint32_t);
 	uint32_t time2sck(float time); // Conversion function with time in milliseconds
 	static inline void SET_CLK_SEL(const bool input) __attribute__((always_inline));
