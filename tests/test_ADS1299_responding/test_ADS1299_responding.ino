@@ -35,6 +35,7 @@ void ADS1299_SDATAC(void);
 void ADS1299_RDATAC(void);
 void ADS1299_START(void);
 byte SPI_SendByte(byte data_byte, bool cont);
+void read_ADS1299_data(byte *buffer);
 
 // --- Register Setup ---
 /* Data Structure for controlling registers */
@@ -76,6 +77,10 @@ byte SPI_SendByte(byte data_byte, bool cont) {
     }
 
     byte received = vspi->transfer(data_byte); // Send and receive
+
+//    if (data_byte == 0) {
+ //       return -1;
+  //  }
 
     if (!cont) {
         digitalWrite(pin_CS_NUM, HIGH); // De-assert CS
@@ -145,7 +150,7 @@ void ADS1299_SETUP(void) {
     digitalWrite(pin_RST_NUM, LOW);
     Serial.println("Init pins low");
     delay(100);
-    
+
     digitalWrite(pin_PWDN_NUM, HIGH);
     digitalWrite(pin_RST_NUM, HIGH);
     Serial.println("Init pins high");
@@ -172,6 +177,16 @@ void ADS1299_SETUP(void) {
     }
 }
 
+/* Read ADS1299 Data 
+   Accepts Byte Array */
+void read_ADS1299_data(byte *buffer) {
+    digitalWrite(pin_CS_NUM, LOW);
+    for (int i = 0; i < 27; i++) { // 3 status bytes + 8 channels * 3 bytes/channel
+        buffer[i] = SPI_SendByte(0x00, true);
+    }
+    digitalWrite(pin_CS_NUM, HIGH);
+}
+
 // SETUP FUNCTION
 void setup() {
   // put your setup code here, to run once:
@@ -190,7 +205,7 @@ void setup() {
     pinMode(pin_LED_DEBUG, OUTPUT);
     digitalWrite(pin_CS_NUM, HIGH);  // Initialize CS high
     delay(2000);
-    
+
     // --- SPI Initialization ---
     // Check if we're using ESP32 or AVR
     #if defined(ESP32)
@@ -211,52 +226,22 @@ void setup() {
     Serial.println("Setup complete.");
     digitalWrite(pin_START_NUM, HIGH);
     ADS1299_RDATAC();
-    delay(1000);
-    ADS1299_SDATAC();
-
-    uint8_t buffer[1];
-    ADS1299_RREG(0x01, buffer, 1);
-    Serial.print("Buffer value: "); Serial.println(buffer[0], HEX);
-
-    ADS1299_RDATAC();
-    delay(1000);
+    delay(100);
 }
 
 // LOOP FUNCTION
 void loop() {
-  // put your main code here, to run repeatedly:
-  uint8_t sample = 0;
-  int failed_counter = 0;
+  if (digitalRead(pin_DRDY_NUM) == LOW) {
+    byte raw_data[27];
+    read_ADS1299_data(raw_data);
 
-  while (digitalRead(pin_DRDY_NUM) == 1) {
-    //Serial.print("ADC reading: "); Serial.println(SPI_SendByte(sample, true));
-    //failed_counter++;
-    //bool still_failed = true;
-    digitalWrite(pin_CS_NUM, LOW);
-    SPI_SendByte(0x00, true);
-    /*
-    if (still_failed) {
-      int new_attempt_count = 0;
-        while (new_attempt_count < 2000) {
-            int new_attempt_count = 0;
-            ADS1299_SDATAC();
-            uint8_t buffer[1];
-            ADS1299_RREG(0x01, buffer, 1);
-            Serial.print("Buffer value: "); Serial.println(buffer[0], HEX);
-            Serial.println("Re-attempting connection with this");
-            delay(3000);
-            ADS1299_RDATAC();
-            new_attempt_count++;
-            // If something comes in this time
-            if (buffer[0] == 0b10001000) {
-              break;
-            }
-            // If nothing, reset failed_counter and try again
-            failed_counter = 0;
-        }
-        still_failed = false;
-    }
-  }*/
-  digitalWrite(pin_CS_NUM, HIGH);
+    // Create the data packet with timestamp
+    unsigned long timestamp = millis();
+    Serial.write((uint8_t *)&timestamp, sizeof(timestamp)); // Send 4-byte timestamp
+    Serial.write(raw_data, 27); // Send 27 bytes of ADS1299 data
+    /*for (int i=0; i<27; i++) {
+        Serial.println(raw_data[i]);
+    }*/
   }
+  delay(1); // Small delay to avoid overwhelming the serial port
 }
