@@ -2,5 +2,6 @@
     "files.associations": {
         "descriptors.h": "c",
         "string.h": "c"
-    }
+    },
+    "cmake.sourceDirectory": "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/cerelog"
 }

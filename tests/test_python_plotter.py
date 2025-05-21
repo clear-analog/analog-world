@@ -20,7 +20,7 @@ FREQ_BANDS = {
 }
 
 # --- Configuration ---
-SERIAL_PORT = 'COM4'
+SERIAL_PORT = 'COM5'
 BAUD_RATE = 115200
 NUM_CHANNELS = 8
 BYTES_PER_CHANNEL = 3
@@ -136,5 +136,4 @@ except Exception as e:
 finally:
     if 'ser' in locals() and ser.is_open:
         ser.close()
-        DataFilter.plot_data(final_data.shape[1], final_data, "gool")
     #print(f"Data written to {CSV_FILENAME}")

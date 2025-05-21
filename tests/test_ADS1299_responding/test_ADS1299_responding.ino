@@ -43,9 +43,9 @@ typedef struct Deez {
     int add;
     int reg_val;
 } regVal_pair;
-int size_reg_ls = 22;
+const int size_reg_ls = 25;
 // Registers to setup. If -2, end WREG.
-static const regVal_pair ADS1299_REGISTER_LS[22] = {
+static const regVal_pair ADS1299_REGISTER_LS[size_reg_ls] = {
     {0x01, 0b10110000},
     {0x02, 0b11010000},
     {0x03, 0b11101100},
@@ -67,7 +67,10 @@ static const regVal_pair ADS1299_REGISTER_LS[22] = {
     {-2, -2},
     {0x15, 0},
     {0x16, 0},
-    {0x17, 0}
+    {0x17, 0},
+    {0x02, 0xD0},
+    {0x05, 0x05},
+    {0x06, 0x05}
 };
 
 // --- SPI Send/Receive Byte (Arduino Framework) ---
@@ -77,10 +80,6 @@ byte SPI_SendByte(byte data_byte, bool cont) {
     }
 
     byte received = vspi->transfer(data_byte); // Send and receive
-
-//    if (data_byte == 0) {
- //       return -1;
-  //  }
 
     if (!cont) {
         digitalWrite(pin_CS_NUM, HIGH); // De-assert CS
