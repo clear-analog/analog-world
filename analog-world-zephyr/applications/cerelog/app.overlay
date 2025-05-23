@@ -1,0 +1,16 @@
+/{ 
+
+
+
+};
+
+&spi3 {
+    status = "okay";
+    cs-gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+    compatible = "espressif,esp32-spi";
+};
+
+&uart0 {
+    status = "okay";
+    current-speed = <115200>;
+};

@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/zephyr/include",
+                "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/zephyr/kernel/include",
+                "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/zephyr/arch/x86/include",
+                "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/zephyr/lib/libc/picolibc/include"
+            ],
+            "defines": [],
+            "compilerPath": "D:/CERELOG/zephyr/zephyr-sdk-0.17.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+} 

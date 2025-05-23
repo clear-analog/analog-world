@@ -5,5 +5,5 @@ analog-world-zephyr/.west
 analog-world-zephyr/modules
 analog-world-zephyr/tools
 analog-world-zephyr/zephyr
-analog-world-zephyr/zephyr/cerelog/build/
-analog-world-zephyr/zephyr/helloWorld/build/
+analog-world-zephyr/zephyr/cerelog/build
+analog-world-zephyr/zephyr/helloWorld/build
