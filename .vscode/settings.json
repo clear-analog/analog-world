@@ -4,7 +4,9 @@
         "string.h": "c",
         "printk.h": "c",
         "gpio.h": "c",
-        "device.h": "c"
+        "device.h": "c",
+        "kernel.h": "c",
+        "spi.h": "c"
     },
     "cmake.sourceDirectory": "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/cerelog"
 }

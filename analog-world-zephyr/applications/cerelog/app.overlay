@@ -1,7 +1,4 @@
-/{ 
-
-
-
+/{
 };
 
 &spi3 {
@@ -12,5 +9,5 @@
 
 &uart0 {
     status = "okay";
-    current-speed = <115200>;
+    current-speed = <921600>;
 };
