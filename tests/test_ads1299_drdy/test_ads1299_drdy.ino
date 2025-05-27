@@ -1,6 +1,37 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+// --- Packet/Protocol Global Variables ---
+// Number of status bytes from ADS1299 (fixed by chip)
+const uint8_t ADS1299_NUM_STATUS_BYTES = 3;
+// Number of channels (fixed by chip)
+const uint8_t ADS1299_NUM_CHANNELS = 8;
+// Number of bytes per channel (fixed by chip)
+const uint8_t ADS1299_BYTES_PER_CHANNEL = 3;
+// Total number of data bytes from ADS1299 (status + channel data)
+const uint8_t ADS1299_TOTAL_DATA_BYTES = ADS1299_NUM_STATUS_BYTES + (ADS1299_NUM_CHANNELS * ADS1299_BYTES_PER_CHANNEL);
+
+// Packet protocol fields
+const uint8_t PACKET_TIMESTAMP_BYTES = 4;
+const uint8_t PACKET_START_MARKER_BYTES = 2;
+const uint8_t PACKET_END_MARKER_BYTES = 2;
+const uint8_t PACKET_LENGTH_FIELD_BYTES = 1;
+const uint8_t PACKET_CHECKSUM_BYTES = 1;
+
+// The message length field (timestamp + ADS1299 data)
+const uint8_t PACKET_MSG_LENGTH = PACKET_TIMESTAMP_BYTES + ADS1299_TOTAL_DATA_BYTES;
+
+// The total packet size (start + len + data + checksum + end)
+const uint8_t PACKET_TOTAL_SIZE = PACKET_START_MARKER_BYTES + PACKET_LENGTH_FIELD_BYTES + PACKET_MSG_LENGTH + PACKET_CHECKSUM_BYTES + PACKET_END_MARKER_BYTES;
+
+// Indices for packet fields
+const uint8_t PACKET_IDX_START_MARKER = 0;
+const uint8_t PACKET_IDX_LENGTH = PACKET_IDX_START_MARKER + PACKET_START_MARKER_BYTES;
+const uint8_t PACKET_IDX_TIMESTAMP = PACKET_IDX_LENGTH + PACKET_LENGTH_FIELD_BYTES;
+const uint8_t PACKET_IDX_ADS1299_DATA = PACKET_IDX_TIMESTAMP + PACKET_TIMESTAMP_BYTES;
+const uint8_t PACKET_IDX_CHECKSUM = PACKET_IDX_ADS1299_DATA + ADS1299_TOTAL_DATA_BYTES;
+const uint8_t PACKET_IDX_END_MARKER = PACKET_IDX_CHECKSUM + PACKET_CHECKSUM_BYTES;
+
 // --- Pin Mapping ---
 static const uint8_t pin_MOSI_NUM = 23;
 static const uint8_t pin_CS_NUM = 5;
@@ -73,6 +104,8 @@ static const regVal_pair ADS1299_REGISTER_LS[size_reg_ls] = {
     {0x16, 0},
     {0x17, 0}
 };
+
+/* Need to understand */
 
 // --- Interrupt Service Routine ---
 void IRAM_ATTR onDRDYFalling(void) {
@@ -186,7 +219,7 @@ void ADS1299_SETUP(void) {
    Accepts Byte Array */
 void read_ADS1299_data(byte *buffer) {
     digitalWrite(pin_CS_NUM, LOW);
-    for (int i = 0; i < 27; i++) { // 3 status bytes + 8 channels * 3 bytes/channel
+    for (int i = 0; i < ADS1299_TOTAL_DATA_BYTES; i++) { // 3 status bytes + 8 channels * 3 bytes/channel
         buffer[i] = SPI_SendByte(0x00, true);
     }
     digitalWrite(pin_CS_NUM, HIGH);
@@ -200,7 +233,7 @@ void setup() {
         ; // Wait for serial port to connect
     }
 
-    // --- GPIO Configuration ---
+    /* GPIO Configuration */
     pinMode(pin_PWDN_NUM, OUTPUT);
     pinMode(pin_RST_NUM, OUTPUT);
     pinMode(pin_START_NUM, OUTPUT);
@@ -209,6 +242,8 @@ void setup() {
     pinMode(pin_LED_DEBUG, OUTPUT);
     digitalWrite(pin_CS_NUM, HIGH);  // Initialize CS high
     delay(2000);
+
+    digitalWrite(pin_LED_DEBUG, LOW);
 
     // --- SPI Initialization ---
     // Check if we're using ESP32 or AVR
@@ -239,47 +274,47 @@ void setup() {
 // LOOP FUNCTION
 void loop() {
     if (dataReady) {
+        digitalWrite(pin_LED_DEBUG, HIGH);
         dataReady = false;
 
         // Read ADS1299 data
-        byte raw_data[27];
+        byte raw_data[ADS1299_TOTAL_DATA_BYTES];
         read_ADS1299_data(raw_data);
 
         // Create message buffer
         const uint16_t START_MARKER = 0xABCD;
         const uint16_t END_MARKER = 0xDCBA;
-        const uint8_t MSG_LENGTH = 37;  // timestamp + ADS1299 data
-        byte packet[2 + 1 + MSG_LENGTH + 1 + 2];  // start + len + data + checksum + end
+        byte packet[PACKET_TOTAL_SIZE];  // start + len + data + checksum + end
 
         // Start marker (2 bytes)
-        packet[0] = (START_MARKER >> 8) & 0xFF;
-        packet[1] = START_MARKER & 0xFF;
+        packet[PACKET_IDX_START_MARKER] = (START_MARKER >> 8) & 0xFF;
+        packet[PACKET_IDX_START_MARKER + 1] = START_MARKER & 0xFF;
 
         // Message length (1 byte)
-        packet[2] = MSG_LENGTH;
+        packet[PACKET_IDX_LENGTH] = PACKET_MSG_LENGTH;
 
         // Timestamp (4 bytes)
         unsigned long timestamp = millis();
-        packet[3] = (timestamp >> 24) & 0xFF;
-        packet[4] = (timestamp >> 16) & 0xFF;
-        packet[5] = (timestamp >> 8) & 0xFF;
-        packet[6] = timestamp & 0xFF;
+        packet[PACKET_IDX_TIMESTAMP]     = (timestamp >> 24) & 0xFF;
+        packet[PACKET_IDX_TIMESTAMP + 1] = (timestamp >> 16) & 0xFF;
+        packet[PACKET_IDX_TIMESTAMP + 2] = (timestamp >> 8) & 0xFF;
+        packet[PACKET_IDX_TIMESTAMP + 3] = timestamp & 0xFF;
 
         // Copy ADS1299 data (27 bytes)
-        for (int i = 0; i < 27; i++) {
-            packet[7 + i] = raw_data[i];
+        for (uint8_t i = 0; i < ADS1299_TOTAL_DATA_BYTES; i++) {
+            packet[PACKET_IDX_ADS1299_DATA + i] = raw_data[i];
         }
 
         // Compute checksum (sum of all bytes from length to last data byte)
         uint8_t checksum = 0;
-        for (int i = 2; i < 34; i++) {
+        for (uint8_t i = PACKET_IDX_LENGTH; i < PACKET_IDX_CHECKSUM; i++) {
             checksum += packet[i];
         }
-        packet[34] = checksum;
+        packet[PACKET_IDX_CHECKSUM] = checksum;
 
         // End marker (2 bytes)
-        packet[35] = (END_MARKER >> 8) & 0xFF;
-        packet[36] = END_MARKER & 0xFF;
+        packet[PACKET_IDX_END_MARKER] = (END_MARKER >> 8) & 0xFF;
+        packet[PACKET_IDX_END_MARKER + 1] = END_MARKER & 0xFF;
 
         // Send entire packet over Serial
         Serial.write(packet, sizeof(packet));
@@ -288,7 +323,6 @@ void loop() {
     // Background tasks (if needed)
 }
 
-
 void loop3() {
     // Check if data is ready (flag set by interrupt)
     if (dataReady) {
@@ -296,13 +330,13 @@ void loop3() {
         dataReady = false;
         
         // Read the data
-        byte raw_data[27];
+        byte raw_data[ADS1299_TOTAL_DATA_BYTES];
         read_ADS1299_data(raw_data);
 
         // Create the data packet with timestamp
         unsigned long timestamp = millis();
         Serial.write((uint8_t *)&timestamp, sizeof(timestamp)); // Send 4-byte timestamp
-        Serial.write(raw_data, 27); // Send 27 bytes of ADS1299 data
+        Serial.write(raw_data, ADS1299_TOTAL_DATA_BYTES); // Send ADS1299 data
     }
     
     // You can do other tasks here without blocking
