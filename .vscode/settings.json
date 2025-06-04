@@ -8,5 +8,5 @@
         "kernel.h": "c",
         "spi.h": "c"
     },
-    "cmake.sourceDirectory": "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/cerelog"
+    "cmake.sourceDirectory": "D:/suraj/CS/AnalogWorld/analog-world/analog-world-zephyr/zephyr"
 }

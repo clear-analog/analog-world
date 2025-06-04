@@ -12,7 +12,7 @@ import dash.dependencies
 
 # --- Serial Configuration ---
 SERIAL_PORT = 'COM4'        # Change this to your port, e.g. /dev/ttyUSB0 on Linux/Mac
-BAUD_RATE = 115200
+BAUD_RATE = 921600
 
 # --- Packet Structure (from firmware) ---
 # 2 bytes: start marker (0xABCD, big endian)
@@ -48,15 +48,10 @@ BUFFER_SIZE = 1000  # Number of samples to keep for plotting
 channel_buffers = [deque(maxlen=BUFFER_SIZE) for _ in range(ADS1299_NUM_CHANNELS)]
 timestamp_buffer = deque(maxlen=BUFFER_SIZE)
 
-# For samples-per-second (SPS) plot
-SPS_WINDOW_MS = 1000  # 1 second window for SPS calculation
-SPS_BUFFER_SIZE = 100  # Number of SPS points to keep for plotting
-sps_time_buffer = deque(maxlen=SPS_BUFFER_SIZE)  # x-axis: time (ms)
-sps_buffers = [deque(maxlen=SPS_BUFFER_SIZE) for _ in range(ADS1299_NUM_CHANNELS)]  # y-axis: SPS per channel
-
 # Thread-safe lock for buffer access
 buffer_lock = threading.Lock()
 
+# --- Parse Packet ---
 def parse_packet(packet):
     if len(packet) != PACKET_TOTAL_SIZE:
         return
@@ -99,7 +94,7 @@ def parse_packet(packet):
         val = int.from_bytes(raw, byteorder='big', signed=False)
         if val & 0x800000:
             val = val - 0x1000000  # Convert to signed
-        mv = convert_to_millivolts(val)
+        mv = convert_to_uVolt(val)
         channel_values.append(mv)
 
     # Add to buffer
@@ -107,8 +102,8 @@ def parse_packet(packet):
         timestamp_buffer.append(timestamp)
         for ch in range(ADS1299_NUM_CHANNELS):
             channel_buffers[ch].append(channel_values[ch])
-        # SPS calculation is handled in the callback, not here
 
+# --- Serial Messaging Thread ---
 def serial_thread():
     with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser:
         buffer = bytearray()
@@ -139,14 +134,15 @@ def serial_thread():
                         # Not a start marker, discard first byte and resync
                         buffer = buffer[1:]
 
-def convert_to_millivolts(raw_val, vref=4.5, gain=12):
+# This function supposedly converts the ADC count into a voltage value
+def convert_to_uVolt(raw_val, vref=4.5, gain=24):
     full_scale = vref / gain  # Full-scale range in Volts
-    return (raw_val / (2 ** 23)) * (full_scale * 1000)  # Convert to mV
+    return((raw_val * full_scale * 1000000) / 2**23) # outputting in uVolt
 
 # --- Plotly Dash App ---
 app = Dash(__name__)
 
-# Create 8 graphs, one for each channel, plus a 9th for SPS
+# Create 8 graphs, one for each channel
 app.layout = html.Div([
     html.H1("ADS1299 8-Channel Live Data"),
     html.Div([
@@ -155,12 +151,10 @@ app.layout = html.Div([
         ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top', 'margin': '10px'})
         for i in range(ADS1299_NUM_CHANNELS)
     ]),
-    html.Div([
-        dcc.Graph(id='sps-graph')
-    ], style={'width': '95%', 'display': 'block', 'margin': '10px'}),
-    dcc.Interval(id='interval-component', interval=100, n_intervals=0)  # Update every 100 ms
+    dcc.Interval(id='interval-component', interval=100, n_intervals=0),  # Update every 100 ms for channels
 ])
 
+# To be called in a loop for each channel
 def generate_callback(ch_idx):
     @app.callback(
         Output(f'channel-{ch_idx+1}-graph', 'figure'),
@@ -178,75 +172,13 @@ def generate_callback(ch_idx):
         layout = go.Layout(
             title=f'Channel {ch_idx+1}',
             xaxis=dict(title='Timestamp (ms)'),
-            yaxis=dict(title='Voltage (mV)'),
+            yaxis=dict(title='Voltage (uV)'),
             margin=dict(l=40, r=20, t=40, b=40),
             height=300
         )
         return go.Figure(data=[trace], layout=layout)
 
     return update_channel_graph
-
-# Callback for SPS graph
-@app.callback(
-    Output('sps-graph', 'figure'),
-    [Input('interval-component', 'n_intervals')]
-)
-def update_sps_graph(n):
-    # Calculate SPS for each channel over a sliding window
-    with buffer_lock:
-        # Use timestamp_buffer as the reference for time
-        timestamps = list(timestamp_buffer)
-        sps_points = []
-        sps_times = []
-        # We'll use a sliding window of SPS_WINDOW_MS
-        if len(timestamps) < 2:
-            # Not enough data
-            sps_time_buffer.append(0)
-            for ch in range(ADS1299_NUM_CHANNELS):
-                sps_buffers[ch].append(0)
-        else:
-            # We'll calculate SPS at the latest timestamp
-            now = timestamps[-1]
-            window_start = now - SPS_WINDOW_MS
-            # Find the index where timestamp >= window_start
-            idx_start = 0
-            for i, t in enumerate(timestamps):
-                if t >= window_start:
-                    idx_start = i
-                    break
-            # For each channel, count samples in window
-            for ch in range(ADS1299_NUM_CHANNELS):
-                ch_timestamps = timestamps[idx_start:]
-                num_samples = len(ch_timestamps)
-                sps = num_samples * 1000 / SPS_WINDOW_MS  # samples per second
-                sps_buffers[ch].append(sps)
-            sps_time_buffer.append(now)
-    # Prepare traces for all channels
-    traces = []
-    colors = [
-        "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
-        "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"
-    ]
-    with buffer_lock:
-        x = list(sps_time_buffer)
-        for ch in range(ADS1299_NUM_CHANNELS):
-            y = list(sps_buffers[ch])
-            traces.append(go.Scatter(
-                x=x,
-                y=y,
-                mode='lines+markers',
-                name=f'Ch {ch+1}',
-                line=dict(color=colors[ch % len(colors)])
-            ))
-    layout = go.Layout(
-        title="Samples Per Second (SPS) for All Channels",
-        xaxis=dict(title='Timestamp (ms)'),
-        yaxis=dict(title='Samples Per Second'),
-        margin=dict(l=40, r=20, t=40, b=40),
-        height=350,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    )
-    return go.Figure(data=traces, layout=layout)
 
 # Register all callbacks
 callbacks = [generate_callback(i) for i in range(ADS1299_NUM_CHANNELS)]
