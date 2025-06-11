@@ -18,10 +18,6 @@ const uint8_t PACKET_END_MARKER_BYTES = 2;
 const uint8_t PACKET_LENGTH_FIELD_BYTES = 1;
 const uint8_t PACKET_CHECKSUM_BYTES = 1;
 
-// Query Timing Setup
-unsigned long _last_query_time = 0;
-const long _query_interval = 15000; //milliseconds
-
 // The message length field (timestamp + ADS1299 data)
 const uint8_t PACKET_MSG_LENGTH = PACKET_TIMESTAMP_BYTES + ADS1299_TOTAL_DATA_BYTES;
 
@@ -50,17 +46,23 @@ static const uint8_t pin_LED_DEBUG = 17;
 // --- SPI instance ---
 SPIClass* vspi = NULL;  // SPI instance
 
+// Query Timing Setup
+unsigned long _last_query_time = 0;
+static const int SPI_FREQ = 4000000;
+static const int SAMPLE_FREQ = 500;
+static const float SAMPLE_PRD_us = (1 / SAMPLE_FREQ) * 1000000; // This is to be used in delayMicroseconds
+
 // --- ADS1299 State Management ---
 int _ADS1299_MODE = -2;
 int ADS1299_MODE_SDATAC = 1;
 int ADS1299_MODE_RDATAC = 2;
 
 int _ADS1299_PREV_CMD = -1;
-int CMD_ADC_WREG = 3;
-int CMD_ADC_RREG = 4;
-int CMD_ADC_SDATAC = 11;
-int CMD_ADC_RDATAC = 10;
-int CMD_ADC_START = 8;
+int _CMD_ADC_WREG = 3;
+int _CMD_ADC_RREG = 4;
+int _CMD_ADC_SDATAC = 17;
+int _CMD_ADC_RDATAC = 16;
+int _CMD_ADC_START = 8;
 
 // --- Interrupt Flag ---
 volatile bool dataReady = false;
@@ -75,6 +77,7 @@ void ADS1299_START(void);
 byte SPI_SendByte(byte data_byte, bool cont);
 void read_ADS1299_data(byte* buffer);
 void IRAM_ATTR onDRDYFalling(void);
+void print_all_ADS1299_registers_from_setup(void);
 
 // --- Register Setup ---
 /* Data Structure for controlling registers */
@@ -82,31 +85,31 @@ typedef struct Deez {
   int add;
   int reg_val;
 } regVal_pair;
-const int size_reg_ls = 25;
+const int size_reg_ls = 24;
 // Registers to setup. If -2, end WREG.
 static const regVal_pair ADS1299_REGISTER_LS[size_reg_ls] = {
-  { 0x01, 0b10110110 },
-  { 0x02, 0b11010000 },
-  { 0x03, 0b11101100 },
-  { 0x04, 0 },
-  { -2, -2 },
-  { 0x05, 0b01100000 },
-  { 0x06, 0b01100000 },
-  { 0x07, 0b01100000 },
-  { 0x08, 0b01100000 },
-  { 0x09, 0b01100000 },
-  { 0x0A, 0b01100000 },
-  { 0x0B, 0b01100000 },
-  { 0x0C, 0b01100000 },
-  { 0x0D, 0b11111111 },
-  { 0x0E, 0b11111111 },
-  { 0x0F, 0 },
-  { 0x10, 0 },
-  { 0x11, 0 },
-  { -2, -2 },
-  { 0x15, 0 },
-  { 0x16, 0 },
-  { 0x17, 0 }
+  { 0x01, 0b10110101},
+  { 0x02, 0b11010000},
+  { 0x03, 0b11101100},
+  { 0x04, 0},
+  { -2, -2},
+  { 0x05, 0b01100000},
+  { 0x06, 0b01100000},
+  { 0x07, 0b01100000},
+  { 0x08, 0b01100000},
+  { 0x09, 0b01100000},
+  { 0x0A, 0b01100000},
+  { 0x0B, 0b01100000},
+  { 0x0C, 0b01100000},
+  { 0x0D, 0b11111111},
+  { 0x0E, 0b11111111},
+  { 0x0F, 0},
+  { 0x10, 0},
+  { 0x11, 0},
+  { -2, -2},
+  { 0x15, 0},
+  { 0x16, 0},
+  { 0x17, 0}
 };
 
 // --- Interrupt Service Routine ---
@@ -134,21 +137,22 @@ void ADS1299_WREG(uint8_t regAdd, uint8_t* values, uint8_t numRegs) {
     ADS1299_SDATAC();
   }
   digitalWrite(pin_CS_NUM, LOW);
-  SPI_SendByte(0x40 | (regAdd & 0x1F), true);
-  delayMicroseconds(2);
+  //SPI_SendByte(0x40 | (regAdd & 0x1F), true);
+  SPI_SendByte(0b01000000 | regAdd, true);
+  //delayMicroseconds(2);
   SPI_SendByte(numRegs - 1, true);
-  Serial.print("First register address: ");
-  Serial.println(regAdd & 0x1F, BIN);
-  Serial.print("Actual byte sent over: ");
-  Serial.println(CMD_ADC_WREG | (regAdd & 0x1F), BIN);
+  Serial.print("Reg Add: ");
+  Serial.println(0b0000000100000000 + regAdd, BIN);
+  Serial.print("Actual byte sent over to indicate register address: ");
+  Serial.println(0b0000000100000000 + (0b01000000 | regAdd), BIN);
 
   for (uint8_t i = 0; i < numRegs; i++) {
     SPI_SendByte(values[i], true);
-    Serial.print("Value used: ");
-    Serial.println(values[i], BIN);
+    Serial.print("Register value sent: ");
+    Serial.println(0b0000000100000000 + values[i], BIN);
   }
   digitalWrite(pin_CS_NUM, HIGH);
-  _ADS1299_PREV_CMD = CMD_ADC_WREG;
+  _ADS1299_PREV_CMD = _CMD_ADC_WREG;
 }
 
 // --- ADS1299 Read Registers (Arduino) ---
@@ -158,36 +162,42 @@ void ADS1299_RREG(uint8_t regAdd, uint8_t* buffer, uint8_t numRegs) {
     ADS1299_SDATAC();
   }
   digitalWrite(pin_CS_NUM, LOW);
-  SPI_SendByte(0x20 | (regAdd & 0x1F), true);
-  delayMicroseconds(2);
+  //SPI_SendByte(0x20 | (regAdd & 0x1F), true);
+  SPI_SendByte(0b00100000 | regAdd, true);
+  //delayMicroseconds(2);
   SPI_SendByte(numRegs - 1, true);
+  Serial.print("Reg Add: ");
+  Serial.println(0b0000000100000000 + regAdd, BIN);
+  Serial.print("Actual byte sent over to indicate register address: ");
+  Serial.println(0b0000000100000000 + (0b01000000 | regAdd), BIN);
+  //delayMicroseconds(2);
   for (uint8_t i = 0; i < numRegs; i++) {
     buffer[i] = SPI_SendByte(0x00, true);  // Clock in data with dummy bytes
   }
   digitalWrite(pin_CS_NUM, HIGH);
-  _ADS1299_PREV_CMD = CMD_ADC_RREG;
+  _ADS1299_PREV_CMD = _CMD_ADC_RREG;
 }
 
 // --- ADS1299 SDATAC ---
 void ADS1299_SDATAC(void) {
-  SPI_SendByte(CMD_ADC_SDATAC, false);
+  SPI_SendByte(_CMD_ADC_SDATAC, false);
   _ADS1299_MODE = ADS1299_MODE_SDATAC;
-  _ADS1299_PREV_CMD = CMD_ADC_SDATAC;
+  _ADS1299_PREV_CMD = _CMD_ADC_SDATAC;
   Serial.println("Sent SDATAC command!");
 }
 
 // --- ADS1299 RDATAC ---
 void ADS1299_RDATAC(void) {
-  SPI_SendByte(CMD_ADC_RDATAC, false);
+  SPI_SendByte(_CMD_ADC_RDATAC, false);
   _ADS1299_MODE = ADS1299_MODE_RDATAC;
-  _ADS1299_PREV_CMD = CMD_ADC_RDATAC;
+  _ADS1299_PREV_CMD = _CMD_ADC_RDATAC;
   Serial.println("Send RDATAC command!");
 }
 
 // --- ADS1299 Start Command --
 void ADS1299_START(void) {
-  SPI_SendByte(CMD_ADC_START, false);
-  _ADS1299_PREV_CMD = CMD_ADC_START;
+  SPI_SendByte(_CMD_ADC_START, false);
+  _ADS1299_PREV_CMD = _CMD_ADC_START;
   Serial.println("Sent START command!");
 }
 
@@ -206,10 +216,10 @@ void ADS1299_SETUP(void) {
   ADS1299_SDATAC();
 
   uint8_t refbuf[] = { 0b11101100 };  //0b11100000 IS OLD SETTING
-  uint8_t value[1];                   //register setting placeholder var
   ADS1299_WREG(0x03, refbuf, 1);
   delay(10);
-
+  
+  uint8_t value[1];                   //register setting placeholder var
   uint8_t i = 0;
   while (i < size_reg_ls) {
     const regVal_pair temp = ADS1299_REGISTER_LS[i];
@@ -219,7 +229,6 @@ void ADS1299_SETUP(void) {
     }
     value[0] = { (uint8_t)temp.reg_val };
     ADS1299_WREG(temp.add, value, 1);
-    Serial.println('The value being set is : %d', value[0]);
     delayMicroseconds(2);  // Short delay between register writes
     i++;
   }
@@ -235,6 +244,32 @@ void read_ADS1299_data(byte* buffer) {
   }
   //Serial.println();
   digitalWrite(pin_CS_NUM, HIGH);
+}
+
+// --- Print all relevant ADS1299 registers after setup, using addresses from ADS1299_REGISTER_LS ---
+void print_all_ADS1299_registers_from_setup(void) {
+  Serial.println("---- ADS1299 Register Dump ----");
+  for (int i = 0; i < size_reg_ls; i++) {
+    int reg_addr = ADS1299_REGISTER_LS[i].add;
+    if (reg_addr == -2) {
+      i++;
+      continue;
+    } // skip marker
+    uint8_t reg_val[1];
+    ADS1299_RREG((uint8_t)reg_addr, reg_val, 1);
+    Serial.print("Register 0x");
+    if (reg_addr < 0x10) { 
+      Serial.print("0");
+    }
+    
+    Serial.print(reg_addr, HEX);
+    Serial.print(" : ");
+    // Add 0b0000000100000000 (0x100) to force leading 1 for 8 bits
+    uint16_t val_for_print = 0x100 | reg_val[0];
+    Serial.println(val_for_print, BIN); // User can ignore the first '1'
+    delayMicroseconds(2); // Small delay between reads
+  }
+  Serial.println("-------------------------------");
 }
 
 // SETUP FUNCTION
@@ -263,16 +298,19 @@ void setup() {
     // ESP32 SPI initialization
     vspi = new SPIClass(VSPI);                                          // Create VSPI instance
     vspi->begin(pin_SCK_NUM, pin_MISO_NUM, pin_MOSI_NUM, pin_CS_NUM);   // Initialize SPI
-    vspi->beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE1));  // 4 MHz SPI clock, MSB first, Mode 0
+    vspi->beginTransaction(SPISettings(SPI_FREQ, MSBFIRST, SPI_MODE1));  // 4 MHz SPI clock, MSB first, Mode 1 because CPOL = 0 and CPHA = 1
   #else
     // Standard Arduino SPI initialization
     //vspi = &SPI;  // Use the default SPI instance
     vspi->begin(pin_SCK_NUM, pin_MISO_NUM, pin_MOSI_NUM, pin_CS_NUM);
-    vspi->beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE1));  // 8 MHz SPI clock, MSB first, Mode 0
+    vspi->beginTransaction(SPISettings(SPI_FREQ, MSBFIRST, SPI_MODE1));  // 8 MHz SPI clock, MSB first, Mode 1 because CPOL = 0 and CPHA = 1
   #endif
 
   // --- ADS1299 Initialization ---
   ADS1299_SETUP();
+
+  // --- Print all relevant registers before starting continuous data read ---
+  print_all_ADS1299_registers_from_setup();
 
   // --- Attach Interrupt ---
   attachInterrupt(digitalPinToInterrupt(pin_DRDY_NUM), onDRDYFalling, FALLING);
@@ -289,13 +327,13 @@ void setup() {
 // LOOP FUNCTION
 void loop() {
   static uint64_t packet_counter = 0;  // Use a static variable to keep track of the incrementing timestamp
-  unsigned long currentMicros = millis();
+  unsigned long currentMicros = micros();
 
+  if (currentMicros - _last_query_time >= SAMPLE_PRD_us) {
+    _last_query_time = currentMicros;
     if (dataReady) {
       dataReady = false;
-      // Ask for the damn register setting at 0x01
-      /*
-      if (currentMicros - _last_query_time >= _query_interval) {
+      /* if (currentMicros - _last_query_time >= _query_interval) {
         _last_query_time = currentMicros;
         // Check if register at address 0x01 ends with 110
         uint8_t buf[1];
@@ -307,7 +345,9 @@ void loop() {
         ADS1299_RDATAC();
         delay(100);
         ADS1299_START();
-      } */
+      }
+      */
+
       digitalWrite(pin_LED_DEBUG, HIGH);
 
       // Read ADS1299 data
@@ -353,4 +393,5 @@ void loop() {
       // Send entire packet over Serial
       Serial.write(packet, sizeof(packet));
     }
+  }
 }
