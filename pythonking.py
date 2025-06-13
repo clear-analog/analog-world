@@ -48,6 +48,10 @@ BUFFER_SIZE = 1000  # Number of samples to keep for plotting
 channel_buffers = [deque(maxlen=BUFFER_SIZE) for _ in range(ADS1299_NUM_CHANNELS)]
 timestamp_buffer = deque(maxlen=BUFFER_SIZE)
 
+# For sample rate calculation: store the last N timestamps per channel
+SPS_WINDOW = 100  # Number of samples to use for SPS calculation
+channel_timestamp_buffers = [deque(maxlen=SPS_WINDOW) for _ in range(ADS1299_NUM_CHANNELS)]
+
 # Thread-safe lock for buffer access
 buffer_lock = threading.Lock()
 
@@ -91,17 +95,25 @@ def parse_packet(packet):
         idx = ADS1299_NUM_STATUS_BYTES + ch * ADS1299_BYTES_PER_CHANNEL
         raw = ads_data[idx:idx+ADS1299_BYTES_PER_CHANNEL]
         # Convert 3 bytes to signed 24-bit int (big endian)
-        val = int.from_bytes(raw, byteorder='big', signed=False)
-        if val & 0x800000:
-            val = val - 0x1000000  # Convert to signed
-        mv = convert_to_uVolt(val)
-        channel_values.append(mv)
+        value = int.from_bytes(raw, byteorder='big', signed=False)
+        #value = raw[0] << 16 | raw[1] << 8 | raw[2]
+
+        # If that MSB was actually 1 which implies that it was a negative number, so signed extension is now necessary
+        #if (value & 0b00000000100000000000000000000000):
+        #    value = value | 0b11111111000000000000000000000000
+
+        if value & 0b00000000100000000000000000000000:
+            value = value - 0x1000000  # Convert to signed
+        ##    val = val | 0b11111111000000000000000000000000
+        v = convert_to_volt(value)
+        channel_values.append(v)
 
     # Add to buffer
     with buffer_lock:
         timestamp_buffer.append(timestamp)
         for ch in range(ADS1299_NUM_CHANNELS):
             channel_buffers[ch].append(channel_values[ch])
+            channel_timestamp_buffers[ch].append(timestamp)
 
 # --- Serial Messaging Thread ---
 def serial_thread():
@@ -134,15 +146,15 @@ def serial_thread():
                         # Not a start marker, discard first byte and resync
                         buffer = buffer[1:]
 
-# This function supposedly converts the ADC count into a voltage value
-def convert_to_uVolt(raw_val, vref=4.5, gain=24):
-    full_scale = vref / gain  # Full-scale range in Volts
-    return((raw_val * full_scale * 1000000) / 2**23) # outputting in uVolt
+# This function converts the ADC count into a voltage value
+def convert_to_volt(raw_val, vref=4.5, gain=24):
+    full_scale = (2 * vref / gain) / (2 ** 24) # Full-scale range in Volts
+    return(raw_val * full_scale) # outputting in volt
 
 # --- Plotly Dash App ---
 app = Dash(__name__)
 
-# Create 8 graphs, one for each channel
+# Create 8 graphs, one for each channel, and a histogram for SPS
 app.layout = html.Div([
     html.H1("ADS1299 8-Channel Live Data"),
     html.Div([
@@ -151,7 +163,10 @@ app.layout = html.Div([
         ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top', 'margin': '10px'})
         for i in range(ADS1299_NUM_CHANNELS)
     ]),
-    dcc.Interval(id='interval-component', interval=100, n_intervals=0),  # Update every 100 ms for channels
+    html.Div([
+        dcc.Graph(id='sps-histogram')
+    ], style={'width': '95%', 'display': 'block', 'margin': '20px auto'}),
+    dcc.Interval(id='interval-component', interval=100, n_intervals=0),  # Update every 100 ms for channels and SPS
 ])
 
 # To be called in a loop for each channel
@@ -172,7 +187,7 @@ def generate_callback(ch_idx):
         layout = go.Layout(
             title=f'Channel {ch_idx+1}',
             xaxis=dict(title='Timestamp (ms)'),
-            yaxis=dict(title='Voltage (uV)'),
+            yaxis=dict(title='Voltage (V)'),  # Changed from uV to V
             margin=dict(l=40, r=20, t=40, b=40),
             height=300
         )
@@ -180,6 +195,41 @@ def generate_callback(ch_idx):
 
     return update_channel_graph
 
+# Callback for SPS histogram
+@app.callback(
+    Output('sps-histogram', 'figure'),
+    [Input('interval-component', 'n_intervals')]
+)
+def update_sps_histogram(n):
+    sps_values = []
+    with buffer_lock:
+        for ch in range(ADS1299_NUM_CHANNELS):
+            ts_buf = channel_timestamp_buffers[ch]
+            if len(ts_buf) > 50:
+                idx1 = 0
+                idx2 = 50
+                t1 = ts_buf[idx1]
+                t2 = ts_buf[idx2]
+                dt = (t2 - t1) / 1000.0  # ms to s
+                num_samples = idx2 - idx1
+                sps = num_samples / dt if dt > 0 else 0
+            else:
+                sps = 0
+            sps_values.append(sps)
+    bar = go.Bar(
+        x=[f'Ch {i+1}' for i in range(ADS1299_NUM_CHANNELS)],
+        y=sps_values,
+        marker=dict(color='royalblue')
+    )
+    layout = go.Layout(
+        title='Samples Per Second (SPS) per Channel',
+        xaxis=dict(title='Channel'),
+        yaxis=dict(title='SPS', range=[0, max(sps_values + [1]) * 1.2]),
+        bargap=0.3,
+        height=350,
+        margin=dict(l=40, r=20, t=40, b=40)
+    )
+    return go.Figure(data=[bar], layout=layout)
 # Register all callbacks
 callbacks = [generate_callback(i) for i in range(ADS1299_NUM_CHANNELS)]
 
