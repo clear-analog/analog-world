@@ -11,8 +11,9 @@ import dash
 import dash.dependencies
 
 # --- Serial Configuration ---
-SERIAL_PORT = 'COM4'        # Change this to your port, e.g. /dev/ttyUSB0 on Linux/Mac
-BAUD_RATE = 921600
+# SERIAL_PORT = 'COM4'        # Change this to your port, e.g. /dev/ttyUSB0 on Linux/Mac
+SERIAL_PORT = '/dev/cu.usbserial-110'
+BAUD_RATE = 115200
 
 # --- Packet Structure (from firmware) ---
 # 2 bytes: start marker (0xABCD, big endian)

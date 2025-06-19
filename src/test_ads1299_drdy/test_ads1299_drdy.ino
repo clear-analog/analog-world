@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#define DEBUG_ENABLED false // Set to true only when debugging - will corrupt data otherwise
+
 // --- Packet/Protocol Global Variables ---
 // Number of status bytes from ADS1299 (fixed by chip)
 const uint8_t ADS1299_NUM_STATUS_BYTES = 3;
@@ -142,15 +144,15 @@ void ADS1299_WREG(uint8_t regAdd, uint8_t* values, uint8_t numRegs) {
   SPI_SendByte(0b01000000 | regAdd, true);
   //delayMicroseconds(2);
   SPI_SendByte(numRegs - 1, true);
-  Serial.print("Reg Add: ");
-  Serial.println(0b0000000100000000 + regAdd, BIN);
-  Serial.print("Actual byte sent over to indicate register address: ");
-  Serial.println(0b0000000100000000 + (0b01000000 | regAdd), BIN);
+  DEBUG_ENABLED && Serial.print("Reg Add: ");
+  DEBUG_ENABLED && Serial.println(0b0000000100000000 + regAdd, BIN);
+  DEBUG_ENABLED && Serial.print("Actual byte sent over to indicate register address: ");
+  DEBUG_ENABLED && Serial.println(0b0000000100000000 + (0b01000000 | regAdd), BIN);
 
   for (uint8_t i = 0; i < numRegs; i++) {
     SPI_SendByte(values[i], true);
-    Serial.print("Register value sent: ");
-    Serial.println(0b0000000100000000 + values[i], BIN);
+    DEBUG_ENABLED && Serial.print("Register value sent: ");
+    DEBUG_ENABLED && Serial.println(0b0000000100000000 + values[i], BIN);
   }
   digitalWrite(pin_CS_NUM, HIGH);
   _ADS1299_PREV_CMD = _CMD_ADC_WREG;
@@ -167,10 +169,10 @@ void ADS1299_RREG(uint8_t regAdd, uint8_t* buffer, uint8_t numRegs) {
   SPI_SendByte(0b00100000 | regAdd, true);
   //delayMicroseconds(2);
   SPI_SendByte(numRegs - 1, true);
-  Serial.print("Reg Add: ");
-  Serial.println(0b0000000100000000 + regAdd, BIN);
-  Serial.print("Actual byte sent over to indicate register address: ");
-  Serial.println(0b0000000100000000 + (0b01000000 | regAdd), BIN);
+  DEBUG_ENABLED && Serial.print("Reg Add: ");
+  DEBUG_ENABLED && Serial.println(0b0000000100000000 + regAdd, BIN);
+  DEBUG_ENABLED && Serial.print("Actual byte sent over to indicate register address: ");
+  DEBUG_ENABLED && Serial.println(0b0000000100000000 + (0b01000000 | regAdd), BIN);
   //delayMicroseconds(2);
   for (uint8_t i = 0; i < numRegs; i++) {
     buffer[i] = SPI_SendByte(0x00, true);  // Clock in data with dummy bytes
@@ -184,7 +186,7 @@ void ADS1299_SDATAC(void) {
   SPI_SendByte(_CMD_ADC_SDATAC, false);
   _ADS1299_MODE = ADS1299_MODE_SDATAC;
   _ADS1299_PREV_CMD = _CMD_ADC_SDATAC;
-  Serial.println("Sent SDATAC command!");
+  // Serial.println("Sent SDATAC command!");
 }
 
 // --- ADS1299 RDATAC ---
@@ -192,26 +194,26 @@ void ADS1299_RDATAC(void) {
   SPI_SendByte(_CMD_ADC_RDATAC, false);
   _ADS1299_MODE = ADS1299_MODE_RDATAC;
   _ADS1299_PREV_CMD = _CMD_ADC_RDATAC;
-  Serial.println("Send RDATAC command!");
+  DEBUG_ENABLED && Serial.println("Send RDATAC command!");
 }
 
 // --- ADS1299 Start Command --
 void ADS1299_START(void) {
   SPI_SendByte(_CMD_ADC_START, false);
   _ADS1299_PREV_CMD = _CMD_ADC_START;
-  Serial.println("Sent START command!");
+  DEBUG_ENABLED && Serial.println("Sent START command!");
 }
 
 // --- ADS1299 Setup (Arduino) ---
 void ADS1299_SETUP(void) {
   digitalWrite(pin_PWDN_NUM, LOW);
   digitalWrite(pin_RST_NUM, LOW);
-  Serial.println("Init pins low");
+  DEBUG_ENABLED && Serial.println("Init pins low");
   delay(100);
 
   digitalWrite(pin_PWDN_NUM, HIGH);
   digitalWrite(pin_RST_NUM, HIGH);
-  Serial.println("Init pins high");
+  DEBUG_ENABLED && Serial.println("Init pins high");
   delay(1000);
 
   ADS1299_SDATAC();
@@ -238,18 +240,18 @@ void ADS1299_SETUP(void) {
 /* Read ADS1299 Data and Accepts Byte Array */
 void read_ADS1299_data(byte* buffer) {
   digitalWrite(pin_CS_NUM, LOW);
-  //Serial.print("Next packet:");
+  DEBUG_ENABLED && Serial.print("Next packet:");
   for (int i = 0; i < ADS1299_TOTAL_DATA_BYTES; i++) {  // 3 status bytes + 8 channels * 3 bytes/channel
     buffer[i] = SPI_SendByte(0x00, true);
-    //Serial.print(' %d\n', buffer[i]);
+    DEBUG_ENABLED && Serial.print(' %d\n', buffer[i]);
   }
-  //Serial.println();
+  DEBUG_ENABLED && Serial.println();
   digitalWrite(pin_CS_NUM, HIGH);
 }
 
 // --- Print all relevant ADS1299 registers after setup, using addresses from ADS1299_REGISTER_LS ---
 void print_all_ADS1299_registers_from_setup(void) {
-  Serial.println("---- ADS1299 Register Dump ----");
+  DEBUG_ENABLED && Serial.println("---- ADS1299 Register Dump ----");
   for (int i = 0; i < size_reg_ls; i++) {
     int reg_addr = ADS1299_REGISTER_LS[i].add;
     if (reg_addr == -2) {
@@ -258,25 +260,25 @@ void print_all_ADS1299_registers_from_setup(void) {
     }  // skip marker
     uint8_t reg_val[1];
     ADS1299_RREG((uint8_t)reg_addr, reg_val, 1);
-    Serial.print("Register 0x");
+    DEBUG_ENABLED && Serial.print("Register 0x");
     if (reg_addr < 0x10) {
-      Serial.print("0");
+      DEBUG_ENABLED && Serial.print("0");
     }
 
-    Serial.print(reg_addr, HEX);
-    Serial.print(" : ");
+    DEBUG_ENABLED && Serial.print(reg_addr, HEX);
+    DEBUG_ENABLED && Serial.print(" : ");
     // Add 0b0000000100000000 (0x100) to force leading 1 for 8 bits
     uint16_t val_for_print = 0x100 | reg_val[0];
-    Serial.println(val_for_print, BIN);  // User can ignore the first '1'
+    DEBUG_ENABLED && Serial.println(val_for_print, BIN);  // User can ignore the first '1'
     delayMicroseconds(2);                // Small delay between reads
   }
-  Serial.println("-------------------------------");
+  DEBUG_ENABLED && Serial.println("-------------------------------");
 }
 
 // SETUP FUNCTION
 void setup() {
   // --- Serial Initialization ---
-  Serial.begin(921600);
+  Serial.begin(115200);
   while (!Serial) {
     ;  // Wait for serial port to connect
   }
@@ -291,6 +293,7 @@ void setup() {
   digitalWrite(pin_CS_NUM, HIGH);  // Initialize CS high
   delay(2000);
 
+  
   digitalWrite(pin_LED_DEBUG, LOW);
 
 // --- SPI Initialization ---
@@ -316,7 +319,7 @@ void setup() {
   // --- Attach Interrupt ---
   attachInterrupt(digitalPinToInterrupt(pin_DRDY_NUM), onDRDYFalling, FALLING);
 
-  Serial.println("Setup complete.");
+  DEBUG_ENABLED && Serial.println("Setup complete.");
   digitalWrite(pin_START_NUM, HIGH);
   ADS1299_START();
   delay(1);  // wait for 1 ms
@@ -324,6 +327,7 @@ void setup() {
   delay(100);
   ADS1299_START();
 }
+
 
 // LOOP FUNCTION
 void loop() {
@@ -339,7 +343,7 @@ void loop() {
         // Check if register at address 0x01 ends with 110
         uint8_t buf[1];
         ADS1299_RREG(0x01, buf, 1);
-        Serial.println(buf[0], BIN);
+        DEBUG_ENABLED && Serial.println(buf[0], BIN);
 
         ADS1299_START();
         delay(1);
@@ -349,6 +353,8 @@ void loop() {
       }
       */
 
+      static int led_counter = 0;
+      // digitalWrite(pin_LED_DEBUG, (++led_counter % SAMPLE_FREQ) < (SAMPLE_FREQ * 3 / 4)); // Blink when sending data
       digitalWrite(pin_LED_DEBUG, HIGH);
 
       // Read ADS1299 data
