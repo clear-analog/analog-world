@@ -2,6 +2,7 @@ import serial
 import struct
 import threading
 import time
+import platform
 from collections import deque
 
 import plotly.graph_objs as go
@@ -11,8 +12,20 @@ import dash
 import dash.dependencies
 
 # --- Serial Configuration ---
-SERIAL_PORT = 'COM4'        # Change this to your port, e.g. /dev/ttyUSB0 on Linux/Mac
-BAUD_RATE = 921600
+if platform.system() == "Windows":
+      port = "COM4"
+      baud_rate = 921600
+elif platform.system() == "Darwin": # Mac
+      port = "/dev/cu.usbserial-110" 
+      baud_rate = 230400
+elif platform.system() == "Linux":
+      port = "/dev/ttyUSB0" 
+      baud_rate = 230400
+else:
+      baud_rate = 230400
+      raise OSError("Unsupported or unknown operating system")
+
+print(f"Using port {port} at baud rate {baud_rate}")
 
 # --- Packet Structure (from firmware) ---
 # 2 bytes: start marker (0xABCD, big endian)
@@ -117,7 +130,7 @@ def parse_packet(packet):
 
 # --- Serial Messaging Thread ---
 def serial_thread():
-    with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser:
+    with serial.Serial(port, baud_rate, timeout=1) as ser:
         buffer = bytearray()
         while True:
             data = ser.read()  # Read byte-by-byte
